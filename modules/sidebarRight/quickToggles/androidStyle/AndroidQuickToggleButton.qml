@@ -25,6 +25,30 @@ GroupButton {
     baseHeight: root.baseCellHeight
 
     property bool editMode: false
+    readonly property color colDarkSurface: Appearance.angelEverywhere
+        ? ColorUtils.transparentize(Appearance.angel.colGlassCard, 0.76)
+        : Appearance.inirEverywhere ? ColorUtils.transparentize(Appearance.inir.colLayer1, 0.22)
+        : Appearance.auroraEverywhere ? ColorUtils.transparentize(
+            Appearance.colors.colLayer0Base,
+            Math.max(0.12, Appearance.aurora.subSurfaceTransparentize - 0.14)
+        )
+        : ColorUtils.transparentize(Appearance.colors.colLayer2, 0.24)
+    readonly property color colDarkSurfaceHover: Appearance.angelEverywhere
+        ? Appearance.angel.colGlassCardHover
+        : Appearance.inirEverywhere ? Appearance.inir.colLayer2Hover
+        : Appearance.auroraEverywhere ? ColorUtils.transparentize(
+            Appearance.colors.colLayer1,
+            Math.max(0.16, Appearance.aurora.subSurfaceTransparentize - 0.10)
+        )
+        : ColorUtils.transparentize(Appearance.colors.colLayer2Hover, 0.20)
+    readonly property color colDarkSurfaceActive: Appearance.angelEverywhere
+        ? Appearance.angel.colGlassCardActive
+        : Appearance.inirEverywhere ? Appearance.inir.colLayer2Active
+        : Appearance.auroraEverywhere ? ColorUtils.transparentize(
+            Appearance.colors.colLayer1,
+            Math.max(0.12, Appearance.aurora.subSurfaceTransparentize - 0.14)
+        )
+        : ColorUtils.transparentize(Appearance.colors.colLayer2Active, 0.18)
     enableImplicitWidthAnimation: !editMode && root.mouseArea.containsMouse
     enableImplicitHeightAnimation: !editMode && root.mouseArea.containsMouse
     Behavior on baseWidth {
@@ -59,10 +83,10 @@ GroupButton {
 
     colBackground: Appearance.angelEverywhere ? Appearance.angel.colGlassCard
         : Appearance.inirEverywhere ? Appearance.inir.colLayer2 
-        : Appearance.auroraEverywhere ? "transparent" : Appearance.colors.colLayer2
+        : root.colDarkSurface
     colBackgroundHover: Appearance.angelEverywhere ? Appearance.angel.colGlassCardHover
         : Appearance.inirEverywhere ? Appearance.inir.colLayer2Hover 
-        : Appearance.auroraEverywhere ? Appearance.aurora.colSubSurface : Appearance.colors.colLayer2Hover
+        : root.colDarkSurfaceHover
     colBackgroundToggled: Appearance.angelEverywhere ? ColorUtils.transparentize(Appearance.angel.colPrimary, 0.45)
         : Appearance.inirEverywhere 
         ? Appearance.inir.colPrimaryContainer
