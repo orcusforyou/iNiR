@@ -2977,15 +2977,31 @@ ContentPage {
         title: Translation.tr("Wallpaper selector")
 
         SettingsGroup {
-            SettingsSwitch {
-                buttonIcon: "ad"
-                text: Translation.tr('Use system file picker')
-                checked: Config.options.wallpaperSelector.useSystemFileDialog
-                onCheckedChanged: {
-                    Config.options.wallpaperSelector.useSystemFileDialog = checked;
+            ContentSubsection {
+                title: Translation.tr("Selector style")
+
+                SettingsSwitch {
+                    buttonIcon: "view_carousel"
+                    text: Translation.tr("Coverflow mode")
+                    checked: (Config.options?.wallpaperSelector?.style ?? "grid") === "coverflow"
+                    onCheckedChanged: Config.setNestedValue("wallpaperSelector.style", checked ? "coverflow" : "grid")
+                    StyledToolTip {
+                        text: Translation.tr("Use a fullscreen coverflow carousel instead of the grid picker.\nNavigate with arrow keys or mouse wheel.")
+                    }
                 }
-                StyledToolTip {
-                    text: Translation.tr("Use your system's native file picker instead of the built-in one")
+            }
+
+            ContentSubsection {
+                title: Translation.tr("Behavior")
+
+                SettingsSwitch {
+                    buttonIcon: "open_in_new"
+                    text: Translation.tr("Use system file picker")
+                    checked: Config.options?.wallpaperSelector?.useSystemFileDialog ?? false
+                    onCheckedChanged: Config.setNestedValue("wallpaperSelector.useSystemFileDialog", checked)
+                    StyledToolTip {
+                        text: Translation.tr("Use your system's native file picker instead of the built-in one")
+                    }
                 }
             }
         }

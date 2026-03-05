@@ -53,6 +53,7 @@ Singleton {
         }
     }
     property bool cheatsheetOpen: false
+    property bool coverflowSelectorOpen: false
     property bool controlPanelOpen: false
     property bool workspaceShowNumbers: false
     property var activeBooruImageMenu: null  // Track which BooruImage has its menu open

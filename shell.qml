@@ -159,7 +159,7 @@ ShellRoot {
             "iiMediaControls", "iiNotificationPopup", "iiOnScreenDisplay", "iiOnScreenKeyboard",
             "iiOverlay", "iiOverview", "iiPolkit", "iiRegionSelector", "iiScreenCorners",
             "iiSessionScreen", "iiSidebarLeft", "iiSidebarRight", "iiTilingOverlay", "iiVerticalBar",
-            "iiWallpaperSelector", "iiClipboard"
+            "iiWallpaperSelector", "iiCoverflowSelector", "iiClipboard"
         ],
         "waffle": [
             "wBar", "wBackground", "wBackdrop", "wStartMenu", "wActionCenter", "wNotificationCenter", "wNotificationPopup", "wOnScreenDisplay", "wWidgets", "wLock", "wPolkit", "wSessionScreen",
@@ -167,7 +167,7 @@ ShellRoot {
             // Note: wTaskView is experimental and NOT included by default
             // Note: wAltSwitcher is always loaded when waffle is active (not in this list)
             "iiCheatsheet", "iiControlPanel", "iiLock", "iiOnScreenKeyboard", "iiOverlay", "iiOverview", "iiPolkit",
-            "iiRegionSelector", "iiScreenCorners", "iiSessionScreen", "iiTilingOverlay", "iiWallpaperSelector", "iiClipboard"
+            "iiRegionSelector", "iiScreenCorners", "iiSessionScreen", "iiTilingOverlay", "iiWallpaperSelector", "iiCoverflowSelector", "iiClipboard"
         ]
     })
 

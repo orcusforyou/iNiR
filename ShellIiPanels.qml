@@ -55,6 +55,7 @@ Item {
     PanelLoader { identifier: "iiTilingOverlay"; component: TilingOverlay {} }
     PanelLoader { identifier: "iiVerticalBar"; extraCondition: Config.options?.bar?.vertical ?? false; component: VerticalBar {} }
     PanelLoader { identifier: "iiWallpaperSelector"; component: WallpaperSelector {} }
+    PanelLoader { identifier: "iiCoverflowSelector"; component: WallpaperCoverflow {} }
 
     PanelLoader { identifier: "iiClipboard"; component: ClipboardModule.ClipboardPanel {} }
     PanelLoader { identifier: "iiControlPanel"; component: ControlPanel {} }

@@ -109,7 +109,7 @@ Singleton {
                 "iiBar", "iiBackground", "iiBackdrop", "iiCheatsheet", "iiControlPanel", "iiDock", "iiLock", "iiMediaControls",
                 "iiNotificationPopup", "iiOnScreenDisplay", "iiOnScreenKeyboard", "iiOverlay",
                 "iiOverview", "iiPolkit", "iiRegionSelector", "iiScreenCorners", "iiSessionScreen",
-                "iiSidebarLeft", "iiSidebarRight", "iiTilingOverlay", "iiVerticalBar", "iiWallpaperSelector", "iiClipboard", "iiShellUpdate"
+                "iiSidebarLeft", "iiSidebarRight", "iiTilingOverlay", "iiVerticalBar", "iiWallpaperSelector", "iiCoverflowSelector", "iiClipboard", "iiShellUpdate"
             ]
             property string panelFamily: "ii" // "ii" or "waffle"
             property bool familyTransitionAnimation: true // Show animated overlay when switching families
@@ -534,6 +534,11 @@ Singleton {
                     property int intervalMinutes: 30 // minutes between wallpaper changes
                     property bool generateColors: true // regenerate theme colors on each change
                     property string folder: "" // empty = use current wallpaper folder
+                }
+                property JsonObject transition: JsonObject {
+                    property bool enable: true
+                    property string type: "crossfade" // "crossfade" | "slide" | "zoom" | "blurFade"
+                    property int duration: 800 // ms
                 }
             }
 
@@ -1166,6 +1171,7 @@ Singleton {
                 property bool useSystemFileDialog: false
                 property string selectionTarget: "main"
                 property string targetMonitor: ""
+                property string style: "grid" // "grid" | "coverflow"
             }
 
             property JsonObject screenRecord: JsonObject {

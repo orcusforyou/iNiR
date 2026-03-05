@@ -19,6 +19,8 @@ Scope {
         : (Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0])
     readonly property string focusedMonitorName: focusedScreen?.name ?? ""
 
+    property bool _pendingCoverflow: false
+
     // Async focused output detection for Niri.
     // NiriService.currentOutput becomes stale after PanelWindow steals compositor focus.
     // Querying niri directly gives the real focused output at invocation time.
@@ -40,7 +42,12 @@ Scope {
             }
             niriOutputDetector._buffer = ""
             if (!monName) monName = root.focusedMonitorName
-            root._openWithMonitor(monName)
+            if (root._pendingCoverflow) {
+                root._pendingCoverflow = false
+                root._toggleCoverflowWithMonitor(monName)
+            } else {
+                root._openWithMonitor(monName)
+            }
         }
     }
 
@@ -50,6 +57,12 @@ Scope {
             Config.setNestedValue("wallpaperSelector.targetMonitor", monName)
         }
         GlobalStates.wallpaperSelectorOpen = true
+    }
+
+    function _toggleCoverflowWithMonitor(monName) {
+        Config.setNestedValue("wallpaperSelector.targetMonitor", monName ? monName : "")
+        GlobalStates.wallpaperSelectorOpen = false
+        GlobalStates.coverflowSelectorOpen = !GlobalStates.coverflowSelectorOpen
     }
 
     Loader {
@@ -111,7 +124,7 @@ Scope {
                 anchors {
                     top: parent.top
                     horizontalCenter: parent.horizontalCenter
-                    topMargin: Config?.options.bar.vertical ? Appearance.sizes.hyprlandGapsOut : Appearance.sizes.barHeight + Appearance.sizes.hyprlandGapsOut
+                    topMargin: (Config.options?.bar?.vertical ?? false) ? Appearance.sizes.hyprlandGapsOut : Appearance.sizes.barHeight + Appearance.sizes.hyprlandGapsOut
                 }
                 implicitHeight: Appearance.sizes.wallpaperSelectorHeight
                 implicitWidth: Appearance.sizes.wallpaperSelectorWidth
@@ -120,9 +133,11 @@ Scope {
                 scale: GlobalStates.wallpaperSelectorOpen ? 1.0 : 0.97
                 opacity: GlobalStates.wallpaperSelectorOpen ? 1.0 : 0.0
                 Behavior on scale {
+                    enabled: Appearance.animationsEnabled
                     animation: Appearance.animation.elementMoveEnter.numberAnimation.createObject(this)
                 }
                 Behavior on opacity {
+                    enabled: Appearance.animationsEnabled
                     animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
                 }
             }
@@ -133,6 +148,31 @@ Scope {
         if (Config.options?.wallpaperSelector?.useSystemFileDialog ?? false) {
             Wallpapers.openFallbackPicker(Appearance.m3colors.darkmode);
             return;
+        }
+
+        // Route to coverflow if that style is selected
+        const style = Config.options?.wallpaperSelector?.style ?? "grid"
+        if (style === "coverflow") {
+            if (GlobalStates.wallpaperSelectorOpen) {
+                GlobalStates.wallpaperSelectorOpen = false
+            }
+
+            const multiMon = Config.options?.background?.multiMonitor?.enable ?? false
+            const explicitMonitor = Config.options?.wallpaperSelector?.targetMonitor ?? ""
+
+            if (!explicitMonitor && multiMon && CompositorService.isNiri && !niriOutputDetector.running) {
+                root._pendingCoverflow = true
+                niriOutputDetector.exec(["niri", "msg", "-j", "focused-output"])
+                return
+            }
+
+            const monName = explicitMonitor || (multiMon ? root.focusedMonitorName : "")
+            root._toggleCoverflowWithMonitor(monName)
+            return
+        }
+
+        if (GlobalStates.coverflowSelectorOpen) {
+            GlobalStates.coverflowSelectorOpen = false
         }
 
         // If already open, just close

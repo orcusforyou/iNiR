@@ -218,6 +218,11 @@
             "generateColors": true,
             "folder": ""
         },
+        "transition": {
+            "enable": true,
+            "type": "crossfade",
+            "duration": 800
+        },
         "widgets": {
             "clock": {
                 "cookie": {
@@ -819,6 +824,7 @@
     },
     "wallpaperSelector": {
         "selectionTarget": "main",
+        "style": "grid",
         "targetMonitor": "",
         "useSystemFileDialog": false
     },
@@ -1059,6 +1065,7 @@
         "iiTilingOverlay",
         "iiVerticalBar",
         "iiWallpaperSelector",
+        "iiCoverflowSelector",
         "iiClipboard",
         "iiShellUpdate"
     ],
