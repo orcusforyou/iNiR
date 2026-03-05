@@ -44,7 +44,7 @@ MouseArea {
 
         Resource {
             Layout.alignment: Qt.AlignHCenter
-            iconName: "videocam"
+            iconName: "memory_alt"
             percentage: ResourceUsage.gpuUsage
             shown: Config.options?.bar?.resources?.showGpuIndicator ?? true
             warningThreshold: Config.options?.bar?.resources?.gpuWarningThreshold ?? 90

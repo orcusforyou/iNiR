@@ -20,8 +20,13 @@ Item {
     readonly property string popupMode: Config.options?.media?.popupMode ?? "dock"
 
     Layout.fillHeight: true
-    implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 2
+    // Clamp width to prevent long song titles from overflowing into Workspaces.
+    // The bar's centerSideModuleWidth binding already accounts for this, but
+    // an explicit maxWidth keeps the text properly elided inside the group.
+    readonly property real maxMediaWidth: 220
+    implicitWidth: Math.min(rowLayout.implicitWidth + rowLayout.spacing * 2, maxMediaWidth)
     implicitHeight: Appearance.sizes.barHeight
+    clip: true
 
     Timer {
         running: activePlayer?.playbackState == MprisPlaybackState.Playing

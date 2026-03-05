@@ -119,7 +119,7 @@ StyledPopup {
                     value: ResourceUsage.cpuTemp + "°C"
                 }
                 ResourceItem {
-                    icon: "videocam"
+                    icon: "memory_alt"
                     label: "GPU:"
                     value: ResourceUsage.gpuTemp + "°C"
                 }
@@ -142,7 +142,7 @@ StyledPopup {
                     value: (ResourceUsage.cpuUsage > 0.8 ? Translation.tr("High") : ResourceUsage.cpuUsage > 0.4 ? Translation.tr("Medium") : Translation.tr("Low")) + ` (${Math.round(ResourceUsage.cpuUsage * 100)}%)`
                 }
                 ResourceItem {
-                    icon: "videocam"
+                    icon: "memory_alt"
                     label: Translation.tr("GPU:")
                     value: (ResourceUsage.gpuUsage > 0.8 ? Translation.tr("High") : ResourceUsage.gpuUsage > 0.4 ? Translation.tr("Medium") : Translation.tr("Low")) + ` (${Math.round(ResourceUsage.gpuUsage * 100)}%)`
                 }

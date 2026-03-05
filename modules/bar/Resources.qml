@@ -52,7 +52,7 @@ MouseArea {
         }
 
         Resource {
-            iconName: "videocam"
+            iconName: "memory_alt"
             percentage: ResourceUsage.gpuUsage
             shown: (Config.options?.bar?.resources?.showGpuIndicator ?? true) &&
                 ((Config.options?.bar?.resources?.alwaysShowGpu ?? true) || 
