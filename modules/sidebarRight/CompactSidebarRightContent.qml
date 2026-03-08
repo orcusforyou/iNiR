@@ -492,6 +492,20 @@ Item {
                 root.eventsDialogEditEvent = null
             }
         }
+        function onRequestWifiDialogChanged() {
+            if (GlobalStates.requestWifiDialog) {
+                GlobalStates.requestWifiDialog = false
+                if (!GlobalStates.sidebarRightOpen) GlobalStates.sidebarRightOpen = true
+                root.showWifiDialog = true
+            }
+        }
+        function onRequestBluetoothDialogChanged() {
+            if (GlobalStates.requestBluetoothDialog) {
+                GlobalStates.requestBluetoothDialog = false
+                if (!GlobalStates.sidebarRightOpen) GlobalStates.sidebarRightOpen = true
+                root.showBluetoothDialog = true
+            }
+        }
     }
 
     // ─────────────────────────────────────────────────────────────

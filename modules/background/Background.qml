@@ -377,7 +377,7 @@ Variants {
                     muted: true
                     autoPlay: true
 
-                    readonly property bool shouldPlay: bgRoot.enableAnimation && !GlobalStates.screenLocked && !Appearance._gameModeActive
+                    readonly property bool shouldPlay: bgRoot.enableAnimation && !GlobalStates.screenLocked && !Appearance._gameModeActive && !GlobalStates.overviewOpen
 
                     function pauseAndShowFirstFrame() {
                         pause()
@@ -445,6 +445,7 @@ Variants {
                         && !blurLoader.active
                         && !bgRoot.backdropActive
                         && !bgRoot.wallpaperIsGif
+                        && !bgRoot.wallpaperIsVideo
                 anchors.fill: wallpaperContainer
                 sourceComponent: Item {
                     anchors.fill: parent
