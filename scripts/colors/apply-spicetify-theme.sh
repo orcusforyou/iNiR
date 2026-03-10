@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # apply-spicetify-theme.sh - Generate and apply Spicetify color scheme
-# from iNiR Material colors using Sleek theme with live updates.
+# from iNiR Material colors using custom theme with live updates.
 #
 # Design:
 # - First run (Spotify not running): apply theme, start watch mode, launch Spotify
@@ -9,7 +9,7 @@
 # - No Spotify restarts on wallpaper change when watch mode is active
 #
 # Reads: ~/.local/state/quickshell/user/generated/colors.json
-# Writes: ~/.config/spicetify/Themes/Sleek/color.ini
+# Writes: ~/.config/spicetify/Themes/Inir/color.ini
 
 set -euo pipefail
 
@@ -22,7 +22,7 @@ COLORS_JSON="$STATE_DIR/user/generated/colors.json"
 LOG_FILE="$STATE_DIR/user/generated/spicetify_theme.log"
 WATCH_LOCK="$STATE_DIR/user/generated/spicetify_watch.lock"
 
-THEME_NAME="Sleek"
+THEME_NAME="Inir"
 SCHEME_NAME="matugen"
 SLEEK_CSS_URL="https://raw.githubusercontent.com/spicetify/spicetify-themes/master/Sleek/user.css"
 
@@ -135,11 +135,11 @@ EOF
 download_sleek_css() {
   local css_file="$1"
   if [[ ! -f "$css_file" ]]; then
-    log "Downloading Sleek user.css..."
+    log "Downloading base CSS from Sleek theme..."
     if curl -L --create-dirs -o "$css_file" "$SLEEK_CSS_URL" 2>/dev/null; then
-      log "Downloaded Sleek user.css"
+      log "Downloaded base CSS"
     else
-      log "Warning: Failed to download Sleek user.css"
+      log "Warning: Failed to download base CSS"
     fi
   fi
 }
