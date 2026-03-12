@@ -34,18 +34,18 @@ if [[ ! -f "$COLORS_JSON" ]] || ! command -v jq &>/dev/null; then
     exit 0
 fi
 
-BG=$(jq -r '.background // "#1e1e2e"' "$COLORS_JSON")
-FG=$(jq -r '.on_background // "#cdd6f4"' "$COLORS_JSON")
-PRIMARY=$(jq -r '.primary // "#cba6f7"' "$COLORS_JSON")
-ON_PRIMARY=$(jq -r '.on_primary // "#1e1e2e"' "$COLORS_JSON")
-SURFACE=$(jq -r '.surface // "#1e1e2e"' "$COLORS_JSON")
-SURFACE_DIM=$(jq -r '.surface_dim // "#11111b"' "$COLORS_JSON")
-SURFACE_CONTAINER=$(jq -r '.surface_container // "#181825"' "$COLORS_JSON")
-SURFACE_CONTAINER_HIGH=$(jq -r '.surface_container_high // "#1f1f2b"' "$COLORS_JSON")
-ON_SURFACE=$(jq -r '.on_surface // "#cdd6f4"' "$COLORS_JSON")
-SURFACE_CONTAINER_LOW=$(jq -r '.surface_container_low // "#181825"' "$COLORS_JSON")
-OUTLINE_VARIANT=$(jq -r '.outline_variant // "#313244"' "$COLORS_JSON")
-SURFACE_CONTAINER_HIGHEST=$(jq -r '.surface_container_highest // "#313244"' "$COLORS_JSON")
+BG=$(jq -r '.background // empty' "$COLORS_JSON" 2>/dev/null || echo "#1e1e2e")
+FG=$(jq -r '.on_background // empty' "$COLORS_JSON" 2>/dev/null || echo "#cdd6f4")
+PRIMARY=$(jq -r '.primary // empty' "$COLORS_JSON" 2>/dev/null || echo "#cba6f7")
+ON_PRIMARY=$(jq -r '.on_primary // empty' "$COLORS_JSON" 2>/dev/null || echo "#1e1e2e")
+SURFACE=$(jq -r '.surface // empty' "$COLORS_JSON" 2>/dev/null || echo "$BG")
+ON_SURFACE=$(jq -r '.on_surface // empty' "$COLORS_JSON" 2>/dev/null || echo "$FG")
+SURFACE_CONTAINER=$(jq -r '.surface_container // empty' "$COLORS_JSON" 2>/dev/null)
+SURFACE_CONTAINER_HIGH=$(jq -r '.surface_container_high // empty' "$COLORS_JSON" 2>/dev/null)
+SURFACE_CONTAINER_LOW=$(jq -r '.surface_container_low // empty' "$COLORS_JSON" 2>/dev/null)
+SURFACE_DIM=$(jq -r '.surface_dim // empty' "$COLORS_JSON" 2>/dev/null)
+OUTLINE_VARIANT=$(jq -r '.outline_variant // empty' "$COLORS_JSON" 2>/dev/null)
+SURFACE_CONTAINER_HIGHEST=$(jq -r '.surface_container_highest // empty' "$COLORS_JSON" 2>/dev/null)
 
 # If ThemePresets passes args (bg fg primary on_primary surface surface_dim), use them
 # This avoids the race condition between generateColorsJson() writing to disk and this script reading
@@ -77,6 +77,14 @@ adjust_color() {
     ((b < 0)) && b=0; ((b > 255)) && b=255
     printf "#%02x%02x%02x" $r $g $b
 }
+
+# Derive missing surface variants from BG — matugen doesn't always output all M3 tokens
+[[ -z "$SURFACE_DIM" ]]              && SURFACE_DIM=$(adjust_color "$BG" -10)
+[[ -z "$SURFACE_CONTAINER" ]]        && SURFACE_CONTAINER=$(adjust_color "$BG" 13)
+[[ -z "$SURFACE_CONTAINER_LOW" ]]    && SURFACE_CONTAINER_LOW=$(adjust_color "$BG" 9)
+[[ -z "$SURFACE_CONTAINER_HIGH" ]]   && SURFACE_CONTAINER_HIGH=$(adjust_color "$BG" 23)
+[[ -z "$SURFACE_CONTAINER_HIGHEST" ]] && SURFACE_CONTAINER_HIGHEST=$(adjust_color "$BG" 34)
+[[ -z "$OUTLINE_VARIANT" ]]          && OUTLINE_VARIANT=$(adjust_color "$BG" 52)
 
 avg_brightness() {
     local hex="${1#\#}"
@@ -470,31 +478,40 @@ cat > "$GTK3_CSS" << EOF
 @define-color window_bg_color ${BG};
 @define-color window_fg_color ${FG};
 
-@define-color headerbar_bg_color ${SURFACE_DIM};
-@define-color headerbar_fg_color ${ON_SURFACE};
+@define-color headerbar_bg_color ${BG};
+@define-color headerbar_fg_color ${FG};
 
-@define-color popover_bg_color ${SURFACE_DIM};
+@define-color popover_bg_color ${SURFACE_CONTAINER};
 @define-color popover_fg_color ${ON_SURFACE};
 
-@define-color view_bg_color ${SURFACE};
-@define-color view_fg_color ${ON_SURFACE};
+@define-color view_bg_color ${BG};
+@define-color view_fg_color ${FG};
 
-@define-color card_bg_color ${SURFACE};
+@define-color card_bg_color ${SURFACE_CONTAINER_LOW};
 @define-color card_fg_color ${ON_SURFACE};
 
-@define-color sidebar_bg_color @window_bg_color;
-@define-color sidebar_fg_color @window_fg_color;
-@define-color sidebar_border_color @window_bg_color;
-@define-color sidebar_backdrop_color @window_bg_color;
+@define-color sidebar_bg_color ${BG};
+@define-color sidebar_fg_color ${FG};
+@define-color sidebar_border_color ${BG};
+@define-color sidebar_backdrop_color ${BG};
+
+headerbar {
+    background-color: ${BG} !important;
+    box-shadow: none !important;
+    border-bottom: none !important;
+}
+
+headerbar separator {
+    background-color: transparent !important;
+}
 
 .nautilus-window .sidebar,
 .nautilus-window sidebar,
-.nautilus-window placessidebar,
-.nautilus-window placessidebar list,
 placessidebar,
 placessidebar list {
     background-color: ${BG} !important;
     color: ${FG} !important;
+    border-right: none !important;
 }
 
 placessidebar row {
@@ -503,31 +520,26 @@ placessidebar row {
 }
 
 placessidebar row:hover {
-    background-color: alpha(${PRIMARY}, 0.1) !important;
+    background-color: alpha(${PRIMARY}, 0.08) !important;
 }
 
 placessidebar row:selected,
 placessidebar row:selected:hover {
-    background-color: ${PRIMARY} !important;
-    color: ${ON_PRIMARY} !important;
-}
-
-.nautilus-window headerbar {
-    background-color: ${BG} !important;
-    color: ${FG} !important;
-}
-
-.nautilus-window .view {
-    background-color: ${BG} !important;
-    color: ${FG} !important;
+    background-color: alpha(${PRIMARY}, 0.15) !important;
+    color: ${PRIMARY} !important;
 }
 
 placessidebar image {
-    color: ${FG} !important;
+    color: inherit !important;
 }
 
-placessidebar row:selected image {
-    color: ${ON_PRIMARY} !important;
+.view {
+    background-color: ${BG} !important;
+}
+
+separator.sidebar {
+    background-color: transparent !important;
+    min-width: 0;
 }
 EOF
 
@@ -548,8 +560,8 @@ cat > "$GTK4_CSS" << EOF
 @define-color window_bg_color ${BG};
 @define-color window_fg_color ${FG};
 
-@define-color headerbar_bg_color ${SURFACE_DIM};
-@define-color headerbar_fg_color ${ON_SURFACE};
+@define-color headerbar_bg_color ${BG};
+@define-color headerbar_fg_color ${FG};
 
 @define-color popover_bg_color ${SURFACE_CONTAINER};
 @define-color popover_fg_color ${ON_SURFACE};
@@ -557,32 +569,42 @@ cat > "$GTK4_CSS" << EOF
 @define-color dialog_bg_color ${SURFACE_CONTAINER_HIGH};
 @define-color dialog_fg_color ${ON_SURFACE};
 
-@define-color view_bg_color ${SURFACE};
-@define-color view_fg_color ${ON_SURFACE};
+@define-color view_bg_color ${BG};
+@define-color view_fg_color ${FG};
 
 @define-color card_bg_color ${SURFACE_CONTAINER_LOW};
 @define-color card_fg_color ${ON_SURFACE};
 
-@define-color sidebar_bg_color ${SURFACE_CONTAINER_LOW};
-@define-color sidebar_fg_color ${ON_SURFACE};
-@define-color sidebar_border_color ${OUTLINE_VARIANT};
-@define-color sidebar_backdrop_color ${SURFACE_CONTAINER_LOW};
+@define-color sidebar_bg_color ${BG};
+@define-color sidebar_fg_color ${FG};
+@define-color sidebar_border_color ${BG};
+@define-color sidebar_backdrop_color ${BG};
 
 @define-color thumbnail_bg_color ${SURFACE_CONTAINER_HIGHEST};
 @define-color thumbnail_fg_color ${ON_SURFACE};
 
 @define-color card_shade_color alpha(black, 0.15);
-@define-color shade_color alpha(black, 0.36);
+@define-color shade_color alpha(black, 0.25);
 @define-color scrollbar_outline_color alpha(white, 0.1);
+
+headerbar {
+    background-color: ${BG} !important;
+    box-shadow: none !important;
+    border-bottom: none !important;
+}
+
+headerbar separator {
+    background-color: transparent !important;
+}
 
 .nautilus-window .sidebar,
 .nautilus-window sidebar,
-.nautilus-window placessidebar,
-.nautilus-window placessidebar list,
+navigation-view > navigation-sidebar,
 placessidebar,
 placessidebar list {
     background-color: ${BG} !important;
     color: ${FG} !important;
+    border-right: none !important;
 }
 
 placessidebar row {
@@ -591,31 +613,33 @@ placessidebar row {
 }
 
 placessidebar row:hover {
-    background-color: alpha(${PRIMARY}, 0.1) !important;
+    background-color: alpha(${PRIMARY}, 0.08) !important;
 }
 
 placessidebar row:selected,
 placessidebar row:selected:hover {
-    background-color: ${PRIMARY} !important;
-    color: ${ON_PRIMARY} !important;
-}
-
-.nautilus-window headerbar {
-    background-color: ${BG} !important;
-    color: ${FG} !important;
-}
-
-.nautilus-window .view {
-    background-color: ${BG} !important;
-    color: ${FG} !important;
+    background-color: alpha(${PRIMARY}, 0.15) !important;
+    color: ${PRIMARY} !important;
 }
 
 placessidebar image {
-    color: ${FG} !important;
+    color: inherit !important;
 }
 
-placessidebar row:selected image {
-    color: ${ON_PRIMARY} !important;
+.view,
+.nautilus-window .view {
+    background-color: ${BG} !important;
+}
+
+separator.sidebar,
+paned > separator {
+    background-color: transparent !important;
+    min-width: 0;
+}
+
+/* Remove navigation pane borders */
+.navigation-sidebar {
+    border-right: none !important;
 }
 EOF
 

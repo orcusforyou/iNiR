@@ -87,6 +87,7 @@ Scope {
             target: GlobalStates
             function onScreenLockedChanged() {
                 if (GlobalStates.screenLocked) {
+                    SystemInfo.refreshIdentity();
                     lockContext.reset();
                     lockContext.tryFingerUnlock();
                 }
