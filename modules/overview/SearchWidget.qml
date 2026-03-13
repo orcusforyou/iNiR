@@ -15,6 +15,8 @@ Item { // Wrapper
     readonly property string xdgConfigHome: Directories.config
     property string searchingText: ""
     property bool showResults: searchingText != ""
+    readonly property bool actionMode: searchingText.startsWith(root.prefixAction)
+    readonly property string actionQuery: actionMode ? StringUtils.cleanPrefix(searchingText, root.prefixAction) : ""
     implicitWidth: searchWidgetContent.implicitWidth + Appearance.sizes.elevationMargin * 2
     implicitHeight: searchBar.implicitHeight + searchBar.verticalPadding * 2 + Appearance.sizes.elevationMargin * 2
 
@@ -38,71 +40,15 @@ Item { // Wrapper
         return enabled && sensitiveNetwork;
     }
 
-    property var searchActions: [
-        {
-            action: "accentcolor",
-            execute: args => {
-                Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, "--noswitch", "--color", ...(args != '' ? [`${args}`] : [])]);
-            }
-        },
-        {
-            action: "dark",
-            execute: () => {
-                Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, "--mode", "dark", "--noswitch"]);
-            }
-        },
-        {
-            action: "konachanwallpaper",
-            execute: () => {
-                Quickshell.execDetached([Quickshell.shellPath("scripts/colors/random/random_konachan_wall.sh")]);
-            }
-        },
-        {
-            action: "light",
-            execute: () => {
-                Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, "--mode", "light", "--noswitch"]);
-            }
-        },
-        {
-            action: "superpaste",
-            execute: args => {
-                if (!/^(\d+)/.test(args.trim())) { // Invalid if doesn't start with numbers
-                    Quickshell.execDetached([
-                        "/usr/bin/notify-send", 
-                        Translation.tr("Superpaste"), 
-                        Translation.tr("Usage: <tt>%1superpaste NUM_OF_ENTRIES[i]</tt>\nSupply <tt>i</tt> when you want images\nExamples:\n<tt>%1superpaste 4i</tt> for the last 4 images\n<tt>%1superpaste 7</tt> for the last 7 entries").arg(root.prefixAction),
-                        "-a", "Shell"
-                    ]);
-                    return;
-                }
-                const syntaxMatch = /^(?:(\d+)(i)?)/.exec(args.trim());
-                const count = syntaxMatch[1] ? parseInt(syntaxMatch[1]) : 1;
-                const isImage = !!syntaxMatch[2];
-                Cliphist.superpaste(count, isImage);
-            }
-        },
-        {
-            action: "todo",
-            execute: args => {
-                Todo.addTask(args);
-            }
-        },
-        {
-            action: "wallpaper",
-            execute: () => {
-                GlobalStates.wallpaperSelectorOpen = true;
-            }
-        },
-        {
-            action: "wipeclipboard",
-            execute: () => {
-                Cliphist.wipe();
-            }
-        },
-    ]
+    // All actions are now centralized in GlobalActions service.
+    property var searchActions: GlobalActions.searchActions
 
     function focusFirstItem() {
-        appResults.currentIndex = 0;
+        if (root.actionMode && actionModeView.visible) {
+            actionModeView.focusFirstItem()
+        } else {
+            appResults.currentIndex = 0;
+        }
     }
 
     function focusSearchInput() {
@@ -134,6 +80,12 @@ Item { // Wrapper
         const text = root.debouncedSearchText;
         
         if (text === "") {
+            root.cachedResults = [];
+            return;
+        }
+
+        // Action mode is handled entirely by ActionModeView
+        if (text.startsWith(root.prefixAction)) {
             root.cachedResults = [];
             return;
         }
@@ -461,9 +413,18 @@ Item { // Wrapper
                 color: Appearance.colors.colOutlineVariant
             }
 
+            // ── Action Mode View (replaces normal results when in / mode) ──
+            ActionModeView {
+                id: actionModeView
+                Layout.fillWidth: true
+                visible: root.actionMode && root.showResults
+                query: root.actionQuery
+                onActionExecuted: GlobalStates.overviewOpen = false
+            }
+
             ListView { // App results
                 id: appResults
-                visible: root.showResults
+                visible: root.showResults && !root.actionMode
                 Layout.fillWidth: true
                 implicitHeight: Math.min(600, appResults.contentHeight + topMargin + bottomMargin)
                 clip: true

@@ -81,7 +81,27 @@ RowLayout {
 
         onTextChanged: root.searchingText = text
 
+        Keys.onPressed: (event) => {
+            if (actionModeView?.visible) {
+                if (event.key === Qt.Key_Tab || event.key === Qt.Key_Right) {
+                    actionModeView.selectedCategoryIndex = (actionModeView.selectedCategoryIndex + 1) % actionModeView.categoryList.length
+                    event.accepted = true
+                } else if (event.key === Qt.Key_Backtab || event.key === Qt.Key_Left) {
+                    actionModeView.selectedCategoryIndex = (actionModeView.selectedCategoryIndex - 1 + actionModeView.categoryList.length) % actionModeView.categoryList.length
+                    event.accepted = true
+                } else if (event.key === Qt.Key_Down) {
+                    actionModeView.focusFirstItem()
+                    event.accepted = true
+                }
+            }
+        }
+
         onAccepted: {
+            // In action mode, delegate to ActionModeView
+            if (actionModeView?.visible) {
+                actionModeView.focusFirstItem()
+                return
+            }
             if (appResults.count > 0) {
                 // Get the first visible delegate and trigger its click
                 let firstItem = appResults.itemAtIndex(0);
