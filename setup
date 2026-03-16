@@ -910,7 +910,7 @@ run_update() {
         if [[ -f "$runtime_dirs_manifest" ]]; then
             while IFS= read -r dir; do
                 [[ -n "$dir" ]] || continue
-                [[ -d "${II_SOURCE}/${dir}" ]] && mkdir -p "${II_TARGET}/${dir}" && rsync -a --delete "${II_SOURCE}/${dir}/" "${II_TARGET}/${dir}/"
+                [[ -d "${II_SOURCE}/${dir}" ]] && mkdir -p "${II_TARGET}/${dir}" && rsync -a --delete --exclude='AGENTS.md' "${II_SOURCE}/${dir}/" "${II_TARGET}/${dir}/"
             done < "$runtime_dirs_manifest"
         fi
 

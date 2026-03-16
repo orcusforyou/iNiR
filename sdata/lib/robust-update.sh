@@ -63,7 +63,7 @@ generate_manifest() {
             while IFS= read -r dir; do
                 [[ -n "$dir" ]] || continue
                 [[ -d "$repo_root/$dir" ]] || continue
-                find "$repo_root/$dir" -type f 2>/dev/null | while read -r file; do
+                find "$repo_root/$dir" -type f ! -name 'AGENTS.md' 2>/dev/null | while read -r file; do
                     local rel_path="${file#$repo_root/}"
                     local ext="${file##*.}"
 
@@ -118,7 +118,7 @@ get_orphan_files() {
             while IFS= read -r dir; do
                 [[ -n "$dir" ]] || continue
                 if [[ -d "$target_dir/$dir" ]]; then
-                    find "$target_dir/$dir" -type f -printf "$dir/%P\n" 2>/dev/null
+                    find "$target_dir/$dir" -type f ! -name 'AGENTS.md' -printf "$dir/%P\n" 2>/dev/null
                 fi
             done < "$runtime_dirs_manifest"
         fi

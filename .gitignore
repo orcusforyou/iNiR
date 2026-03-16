@@ -9,6 +9,8 @@
 .zed/
 
 # Personal AI/dev tooling and local-only artifacts
+AGENTS.md
+**/AGENTS.md
 agents/
 .kiro/
 .opencode/
@@ -29,8 +31,10 @@ hooks/
 prompts/
 mcp.json
 .cursorrules
-.windsurfrules
 .memory/
+.windsurf/
+.tmp/
+vscode_themegen
 
 # WIP documentation (not for distribution)
 docs/*_IMPLEMENTATION.md
