@@ -197,6 +197,23 @@ resolve_setup_dir() {
         return
     fi
 
+    local version_file="${XDG_CONFIG_HOME:-$HOME/.config}/illogical-impulse/version.json"
+    local stored_repo=""
+    if [[ -f "$version_file" ]]; then
+        if command -v jq >/dev/null 2>&1; then
+            stored_repo=$(jq -r '.repoPath // .repo_path // empty' "$version_file" 2>/dev/null || true)
+        else
+            stored_repo=$(sed -n 's/.*"repoPath"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$version_file" | head -1)
+            [[ -n "$stored_repo" ]] || stored_repo=$(sed -n 's/.*"repo_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$version_file" | head -1)
+        fi
+    fi
+
+    stored_repo="${stored_repo/#\~/$HOME}"
+    if [[ -n "$stored_repo" && -d "${stored_repo}/.git" && -x "${stored_repo}/setup" && -f "${stored_repo}/shell.qml" ]]; then
+        printf '%s' "$stored_repo"
+        return
+    fi
+
     resolve_config_dir
     printf '%s' "$config_dir"
 }

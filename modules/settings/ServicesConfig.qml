@@ -787,6 +787,14 @@ ContentPage {
                 enabled: Config.options?.bar?.weather?.enable ?? false
             }
 
+            SettingsSwitch {
+                buttonIcon: "visibility_off"
+                text: Translation.tr("Hide weather location")
+                checked: Config.options?.waffles?.widgetsPanel?.weatherHideLocation ?? false
+                onCheckedChanged: Config.setNestedValue("waffles.widgetsPanel.weatherHideLocation", checked)
+                enabled: Config.options?.bar?.weather?.enable ?? false
+            }
+
             // Manual location
             ColumnLayout {
                 Layout.fillWidth: true

@@ -2,8 +2,39 @@
 # iNiR setup - installer and maintenance entrypoint
 # Commands: install, update, status, migrate, doctor, rollback, my-changes, uninstall (or TUI if no args)
 
-cd "$(dirname "$0")"
-REPO_ROOT="$(pwd)"
+resolve_bootstrap_repo_root() {
+    local script_dir="$1"
+
+    if [[ -d "${script_dir}/.git" && -f "${script_dir}/setup" && -f "${script_dir}/shell.qml" ]]; then
+        printf '%s' "$script_dir"
+        return
+    fi
+
+    local version_file="${XDG_CONFIG_HOME:-$HOME/.config}/illogical-impulse/version.json"
+    local stored_repo=""
+
+    if [[ -f "$version_file" ]]; then
+        if command -v jq >/dev/null 2>&1; then
+            stored_repo=$(jq -r '.repoPath // .repo_path // empty' "$version_file" 2>/dev/null || true)
+        else
+            stored_repo=$(sed -n 's/.*"repoPath"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$version_file" | head -1)
+            [[ -n "$stored_repo" ]] || stored_repo=$(sed -n 's/.*"repo_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$version_file" | head -1)
+        fi
+    fi
+
+    stored_repo="${stored_repo/#\~/$HOME}"
+
+    if [[ -n "$stored_repo" && -d "${stored_repo}/.git" && -f "${stored_repo}/setup" && -f "${stored_repo}/shell.qml" ]]; then
+        printf '%s' "$stored_repo"
+        return
+    fi
+
+    printf '%s' "$script_dir"
+}
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(resolve_bootstrap_repo_root "$SCRIPT_DIR")"
+cd "$REPO_ROOT"
 
 # Handle Ctrl+C gracefully
 cleanup() {
