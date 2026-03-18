@@ -319,7 +319,8 @@ MouseArea {
                     }
                     
                     Text {
-                        text: Weather.data?.city ?? ""
+                        text: Weather.visibleCity
+                        visible: Weather.showVisibleCity
                         font.pixelSize: Appearance.font.pixelSize.small
                         font.family: Appearance.font.family.main
                         color: Appearance.colors.colOnSurfaceVariant

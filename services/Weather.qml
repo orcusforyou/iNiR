@@ -13,6 +13,7 @@ Singleton {
     readonly property bool enabled: Config.options?.bar?.weather?.enable ?? false
     readonly property int fetchInterval: (Config.options?.bar?.weather?.fetchInterval ?? 10) * 60 * 1000
     readonly property bool useUSCS: Config.options?.bar?.weather?.useUSCS ?? false
+    readonly property bool hideLocation: Config.options?.waffles?.widgetsPanel?.weatherHideLocation ?? false
 
     // Manual location config
     readonly property string configCity: Config.options?.bar?.weather?.city ?? ""
@@ -40,6 +41,15 @@ Singleton {
         temp: "--°C",
         tempFeelsLike: "--°C"
     })
+    readonly property string visibleCity: {
+        if (root.hideLocation)
+            return ""
+        const city = String(root.data?.city ?? "")
+        if (city.length > 0 && city.toLowerCase() !== "unknown")
+            return city
+        return ""
+    }
+    readonly property bool showVisibleCity: root.visibleCity.length > 0
 
     function isNightNow(): bool {
         const h = new Date().getHours();

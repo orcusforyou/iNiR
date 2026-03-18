@@ -16,14 +16,7 @@ Rectangle {
     readonly property bool auroraEverywhere: Appearance.auroraEverywhere
     readonly property bool hideLocation: Config.options?.waffles?.widgetsPanel?.weatherHideLocation ?? false
     readonly property string weatherDescription: Weather.describeWeather(Weather.data?.wCode ?? "113")
-    readonly property string locationText: {
-        if (root.hideLocation)
-            return ""
-        const city = String(Weather.data?.city ?? "")
-        if (city.length > 0 && city.toLowerCase() !== "unknown")
-            return city
-        return ""
-    }
+    readonly property string locationText: Weather.visibleCity
     readonly property string secondaryText: locationText || root.weatherDescription
 
     radius: Appearance.angelEverywhere ? Appearance.angel.roundingNormal

@@ -906,8 +906,8 @@ Item {
 
                             StyledText {
                                 Layout.fillWidth: true
-                                text: Weather.data?.city ?? ""
-                                visible: (Weather.data?.city ?? "").length > 0
+                                text: Weather.visibleCity
+                                visible: Weather.showVisibleCity
                                 font.pixelSize: Appearance.font.pixelSize.smallest
                                 color: root.colSubtext
                                 elide: Text.ElideRight
