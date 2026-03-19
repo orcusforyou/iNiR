@@ -158,12 +158,39 @@ wait_for_stop() {
 }
 
 start_background() {
-    nohup "$qs_bin" -n -d -p "$1" >/dev/null 2>&1 &
+    (
+        while true; do
+            set +e
+            "$qs_bin" -n -p "$1"
+            exit_code=$?
+            set -e
+            [[ $exit_code -eq 0 ]] && break
+            echo "[inir] quickshell exited with code $exit_code, restarting in 1s..." >&2
+            sleep 1
+        done
+    ) &
     disown || true
 }
 
 kill_shell() {
     "$qs_bin" -p "$1" kill >/dev/null 2>&1 || true
+}
+
+force_kill_qml_window() {
+    local qml_path="$1"
+    local pids
+
+    pids="$(pgrep -f "${qs_bin} -n -p ${qml_path}" || true)"
+    if [[ -z "$pids" ]]; then
+        pids="$(pgrep -f "${qs_bin} .* -p ${qml_path}" || true)"
+    fi
+
+    if [[ -n "$pids" ]]; then
+        while IFS= read -r pid; do
+            [[ -n "$pid" ]] || continue
+            kill "$pid" >/dev/null 2>&1 || true
+        done <<< "$pids"
+    fi
 }
 
 restart_shell() {
@@ -202,6 +229,17 @@ open_detached_qml_window() {
     if [[ ! -f "$qml_path" ]]; then
         echo "Could not find $entry in $dir" >&2
         exit 1
+    fi
+
+    if has_instances "$qml_path"; then
+        kill_shell "$qml_path"
+        if ! wait_for_stop "$qml_path"; then
+            force_kill_qml_window "$qml_path"
+            if ! wait_for_stop "$qml_path"; then
+                echo "Timed out waiting for $entry to stop" >&2
+                exit 1
+            fi
+        fi
     fi
 
     exec "$qs_bin" -n -p "$qml_path"
@@ -619,7 +657,20 @@ case "$command_name" in
             esac
         done
         resolve_config_dir
-        exec "$qs_bin" -n -d -p "$config_dir"
+        # Launch with a background watchdog so hot-reload crashes auto-restart.
+        # The watchdog runs detached; exit code 0 from qs = intentional stop, no restart.
+        (
+            while true; do
+                set +e
+                "$qs_bin" -n -p "$config_dir"
+                exit_code=$?
+                set -e
+                [[ $exit_code -eq 0 ]] && break
+                echo "[inir] quickshell exited with code $exit_code, restarting in 1s..." >&2
+                sleep 1
+            done
+        ) &
+        disown
         ;;
     stop)
         while [[ $# -gt 0 ]]; do
@@ -669,7 +720,18 @@ case "$command_name" in
         done
         resolve_config_dir
         if [[ "$foreground" == true ]]; then
-            exec "$qs_bin" -p "$config_dir"
+            # Run with a restart loop so hot-reload failures don't kill the session.
+            # Exit codes: 0 = clean exit (user quit), anything else = crash/reload failure -> restart.
+            while true; do
+                set +e
+                "$qs_bin" -p "$config_dir"
+                exit_code=$?
+                set -e
+                [[ $exit_code -eq 0 ]] && break
+                echo "[inir] quickshell exited with code $exit_code, restarting in 1s..." >&2
+                sleep 1
+            done
+            exit 0
         fi
         exec "$qs_bin" -n -d -p "$config_dir"
         ;;

@@ -13,12 +13,13 @@ Singleton {
     id: root
 
     // Misc props
-    property bool ready: Pipewire.defaultAudioSink?.ready ?? false
-    property PwNode sink: Pipewire.defaultAudioSink
+    property bool ready: sink?.ready ?? rawSink?.ready ?? false
+    readonly property PwNode rawSink: Pipewire.defaultAudioSink
+    property PwNode sink: root.resolveControllableSink(rawSink)
     property PwNode source: Pipewire.defaultAudioSource
     readonly property real hardMaxValue: 2.00
     property string audioTheme: Config.options?.sounds?.theme ?? "freedesktop"
-    property real value: sink?.audio.volume ?? 0
+    property real value: sink?.audio?.volume ?? rawSink?.audio?.volume ?? 0
     property bool micBeingAccessed: Pipewire.links.values.filter(link =>
         !link.source.isStream && !link.source.isSink && link.target.isStream
     ).length > 0
@@ -33,6 +34,32 @@ Singleton {
     function appNodeDisplayName(node) {
         if (!node) return Translation.tr("Unknown");
         return (node.properties?.["application.name"] || node.description || node.name || Translation.tr("Unknown"))
+    }
+
+    function resolveControllableSink(node) {
+        if (!node || !node.audio)
+            return node
+
+        const props = node.properties ?? {}
+        const nodeName = String(props["node.name"] ?? node.name ?? "")
+        const applicationId = String(props["application.id"] ?? "")
+        const isVirtual = String(props["node.virtual"] ?? "false") === "true"
+        const isPassthrough = String(props["monitor.passthrough"] ?? "false") === "true"
+        const driverId = Number(props["node.driver-id"] ?? 0)
+        const isEasyEffectsSink = nodeName === "easyeffects_sink"
+            || applicationId === "com.github.wwmm.easyeffects"
+            || (isVirtual && isPassthrough)
+
+        if (!isEasyEffectsSink || !Number.isFinite(driverId) || driverId <= 0)
+            return node
+
+        const physicalSink = Pipewire.nodes.values.find(candidate =>
+            root.correctType(candidate, true)
+            && !candidate.isStream
+            && Number(candidate.id ?? 0) === driverId
+        )
+
+        return physicalSink ?? node
     }
 
     // Lists
@@ -225,7 +252,7 @@ Singleton {
 
     // Internals
     PwObjectTracker {
-        objects: [sink, source]
+        objects: [rawSink, sink, source]
     }
 
     Connections { // Protection against sudden volume changes

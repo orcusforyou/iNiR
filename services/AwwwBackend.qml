@@ -51,6 +51,7 @@ Singleton {
     property string lastError: ""
     property bool warnedMissing: false
     property bool stoppedForNoOutputs: false
+    property bool _queuedStopAfterApply: false
 
     readonly property bool available: clientAvailable && daemonAvailable
     readonly property bool active: enabled && available
@@ -238,11 +239,18 @@ Singleton {
         const outputMap = _desiredOutputMap()
         const keys = Object.keys(outputMap)
         if (keys.length === 0) {
+            if (applyProc.running) {
+                root._queuedStopAfterApply = true
+                applyProc._queuedSignature = ""
+                applyProc._queuedCommand = []
+                return
+            }
             if (!stoppedForNoOutputs && !stopProc.running)
                 stopProc.running = true
             return
         }
 
+        root._queuedStopAfterApply = false
         stoppedForNoOutputs = false
         const signature = _signatureFor(outputMap)
         if (signature === lastSyncSignature && !lastError)
@@ -278,10 +286,16 @@ Singleton {
             lines.push(command)
         }
 
-        if (applyProc.running)
-            applyProc.running = false
+        if (applyProc.running) {
+            applyProc._queuedSignature = signature
+            applyProc._queuedCommand = ["/usr/bin/bash", "-lc", lines.join("\n")]
+            return
+        }
+
         lastError = ""
         stoppedForNoOutputs = false
+        applyProc._queuedSignature = ""
+        applyProc._queuedCommand = []
         applyProc.command = ["/usr/bin/bash", "-lc", lines.join("\n")]
         applyProc._pendingSignature = signature
         applyProc.running = true
@@ -306,6 +320,8 @@ Singleton {
     Process {
         id: applyProc
         property string _pendingSignature: ""
+        property string _queuedSignature: ""
+        property var _queuedCommand: []
         stdout: StdioCollector {
             id: applyStdout
         }
@@ -313,15 +329,40 @@ Singleton {
             id: applyStderr
         }
         onExited: (exitCode) => {
+            const queuedSignature = applyProc._queuedSignature
+            const queuedCommand = applyProc._queuedCommand
+            const shouldStopAfterApply = root._queuedStopAfterApply
+
             if (exitCode === 0) {
                 root.lastSyncSignature = applyProc._pendingSignature
                 root.lastError = ""
+            } else {
+                root.lastError = (applyStderr.text ?? applyStdout.text ?? "").trim()
+                if (root.lastError.length === 0)
+                    root.lastError = "awww apply failed"
+                console.warn("[AwwwBackend]", root.lastError)
+            }
+
+            applyProc._pendingSignature = ""
+            applyProc._queuedSignature = ""
+            applyProc._queuedCommand = []
+
+            if (shouldStopAfterApply) {
+                root._queuedStopAfterApply = false
+                if (!stopProc.running)
+                    stopProc.running = true
                 return
             }
-            root.lastError = (applyStderr.text ?? applyStdout.text ?? "").trim()
-            if (root.lastError.length === 0)
-                root.lastError = "awww apply failed"
-            console.warn("[AwwwBackend]", root.lastError)
+
+            root._queuedStopAfterApply = false
+
+            if (queuedSignature !== "" && queuedCommand.length > 0
+                    && (queuedSignature !== root.lastSyncSignature || root.lastError !== "")) {
+                root.lastError = ""
+                applyProc.command = queuedCommand
+                applyProc._pendingSignature = queuedSignature
+                applyProc.running = true
+            }
         }
     }
 

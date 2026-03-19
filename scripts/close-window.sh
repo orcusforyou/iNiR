@@ -9,7 +9,7 @@
 # Quick check if quickshell process exists
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 launcher_path="$script_dir/inir"
-if ! pgrep -x quickshell >/dev/null 2>&1; then
+if ! pgrep -x qs >/dev/null 2>&1 && ! pgrep -x quickshell >/dev/null 2>&1; then
     niri msg action close-window
     exit 0
 fi
