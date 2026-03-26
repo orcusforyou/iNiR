@@ -12,6 +12,8 @@
 AGENTS.md
 **/AGENTS.md
 agents/
+.kilo/
+kilo.json
 .kiro/
 .opencode/
 .claude/
@@ -35,6 +37,9 @@ mcp.json
 .windsurf/
 .tmp/
 vscode_themegen
+opencode_themegen
+system24_themegen
+zed_themegen
 
 # WIP documentation (not for distribution)
 docs/*_IMPLEMENTATION.md
