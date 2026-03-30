@@ -185,7 +185,7 @@ Services are QML singletons that provide system integration and shared state.
 
 ### ThemeService.qml
 - Applies themes (wallpaper-based or presets)
-- Calls matugen to generate colors
+- Calls the unified Python color pipeline to generate colors
 - Updates terminal themes
 
 ### GameMode.qml
@@ -199,11 +199,11 @@ Services are QML singletons that provide system integration and shared state.
 
 1. User changes wallpaper or selects preset
 2. `ThemeService.applyCurrentTheme()` called
-3. `matugen` generates Material You colors
+3. `generate_colors_material.py` generates Material You colors
 4. Colors saved to `~/.local/state/quickshell/user/generated/colors.json`
 5. `MaterialThemeLoader` loads colors into `Appearance.m3colors`
 6. Terminal themes generated (foot, kitty, alacritty, etc.)
-7. GTK/Qt themes applied via matugen templates
+7. GTK/Qt themes applied via rendered templates
 
 ### Design Tokens
 

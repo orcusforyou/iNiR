@@ -73,16 +73,16 @@ qs log -c ii | grep -i "bar\|error"
 qs log -c ii | grep -i "wallpaper"
 ```
 
-### Verify matugen is installed
+### Verify the iNiR Python environment is installed
 
 ```bash
-which matugen
+~/.local/state/quickshell/.venv/bin/python3 -c "import materialyoucolor"
 ```
 
-If not found, install it:
+If that fails, install the Python dependencies again:
 
 ```bash
-paru -S matugen
+./setup install-python-packages
 ```
 
 ### Manually set wallpaper

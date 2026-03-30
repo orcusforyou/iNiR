@@ -23,7 +23,7 @@ const features = [
   },
   {
     title: "Wallpaper theming",
-    desc: "matugen extracts Material You colors from your wallpaper. Terminals, GTK, and the shell update together.",
+    desc: "iNiR extracts Material You colors from your wallpaper. Terminals, GTK, and the shell update together.",
     icon: "◉",
     tag: "04",
   },

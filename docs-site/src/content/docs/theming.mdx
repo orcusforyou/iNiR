@@ -66,12 +66,12 @@ Switch styles in settings or via config:
 
 ## Wallpaper-Based Theming
 
-iNiR uses matugen to extract Material You colors from your wallpaper.
+iNiR uses its built-in Python Material You pipeline to extract colors from your wallpaper.
 
 ### How It Works
 
 1. You set a wallpaper
-2. Matugen analyzes the image
+2. The Python color pipeline analyzes the image
 3. Colors are extracted and saved
 4. iNiR applies the color scheme
 5. Terminal themes are generated
@@ -100,7 +100,7 @@ Restart iNiR to apply.
 
 ### Generated Files
 
-Matugen creates:
+iNiR creates:
 
 - `~/.local/state/quickshell/user/generated/colors.json` - Color palette
 - `~/.config/foot/colors.ini` - Foot terminal theme
@@ -167,11 +167,11 @@ iNiR ships 41 built-in presets. Select in settings under Appearance → Theme.
 
 ### Creating a Theme
 
-Themes are defined in the matugen config. To create a custom theme:
+Themes are defined by iNiR presets and generated palette contracts. To create a custom theme:
 
 1. Copy an existing theme template
 2. Modify colors
-3. Save to matugen config directory
+3. Save it in your iNiR theme/templates setup
 4. Select in iNiR settings
 
 ### Theme Structure
@@ -185,7 +185,7 @@ Themes define:
 - Surface colors
 - Error colors
 
-See matugen documentation for the full schema.
+See the iNiR theming docs for the current palette contract and template syntax.
 
 ## Dark and Light Modes
 
@@ -251,7 +251,7 @@ Themes are regenerated when you change wallpaper or theme preset.
 
 ## GTK Theming
 
-iNiR applies GTK themes via matugen templates. Your GTK apps will match your shell theme.
+iNiR applies GTK themes via rendered iNiR templates. Your GTK apps will match your shell theme.
 
 Config location: `~/.config/gtk-3.0/settings.ini`
 
@@ -275,10 +275,10 @@ gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'
 
 ### Colors not updating
 
-1. Check if matugen is installed
+1. Check that the iNiR Python venv is installed
 2. Verify wallpaper path is correct
 3. Restart iNiR
-4. Check logs for matugen errors
+4. Check logs for color-generation errors
 
 ### Terminal theme not applying
 
@@ -289,15 +289,15 @@ gsettings set org.gnome.desktop.interface cursor-theme 'Adwaita'
 ### GTK apps don't match
 
 1. Check GTK config: `~/.config/gtk-3.0/settings.ini`
-2. Verify matugen templates are installed
+2. Verify iNiR theming templates are installed
 3. Restart GTK apps
 
 ## Advanced Theming
 
-For complete control, edit the matugen config directly:
+For complete control, edit the installed iNiR theming templates directly:
 
 ```bash
-nano ~/.config/matugen/config.toml
+nano ~/.config/matugen/templates.json
 ```
 
-See matugen documentation for all options.
+Also review `~/.config/matugen/templates.json` and the template files under `~/.config/matugen/templates/`.
