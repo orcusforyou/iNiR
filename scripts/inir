@@ -203,6 +203,46 @@ check_qs_abi() {
     exit 1
 }
 
+# Warn if code version differs from what setup last installed.
+# Catches the case where a user does `git pull` in a repo-link checkout
+# without running `./setup update` — new QML loads via hot-reload but
+# infrastructure (launcher, migrations, config dir) stays stale.
+check_setup_version_sync() {
+    local dir="$1"
+    local code_version=""
+    local installed_version=""
+
+    # Read VERSION from the code about to be loaded
+    if [[ -f "$dir/VERSION" ]]; then
+        code_version="$(<"$dir/VERSION")"
+        code_version="${code_version%%[[:space:]]*}"
+    fi
+
+    [[ -z "$code_version" ]] && return 0
+
+    # Read version from version.json (written by setup at install/update time)
+    local version_json
+    version_json="$(inir_version_file 2>/dev/null || echo "")"
+    [[ -z "$version_json" || ! -f "$version_json" ]] && return 0
+
+    if command -v jq >/dev/null 2>&1; then
+        installed_version="$(jq -r '.version // empty' "$version_json" 2>/dev/null || true)"
+    else
+        installed_version="$(grep -o '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "$version_json" 2>/dev/null \
+            | head -1 | sed 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/' || true)"
+    fi
+
+    [[ -z "$installed_version" ]] && return 0
+
+    if [[ "$code_version" != "$installed_version" ]]; then
+        echo "" >&2
+        echo "WARNING: Code version ($code_version) differs from installed version ($installed_version)" >&2
+        echo "  This usually means you updated the code (git pull) without running setup." >&2
+        echo "  Run: ./setup update   or   inir update" >&2
+        echo "" >&2
+    fi
+}
+
 canonicalize_path() {
     local candidate="${1:-}"
     if [[ -z "$candidate" ]]; then
@@ -1046,6 +1086,7 @@ case "$command_name" in
         apply_shell_scale
         apply_qt_runtime_env
         check_qs_abi
+        check_setup_version_sync "$config_dir"
         if has_instances "$config_dir"; then
             echo "iNiR is already running. Use 'inir restart' to restart." >&2
             exit 0
@@ -1103,6 +1144,7 @@ case "$command_name" in
         apply_qt_runtime_env
         apply_qt_logging_rules
         check_qs_abi
+        check_setup_version_sync "$config_dir"
         if [[ "$foreground" == true ]]; then
             # Run with a restart loop so hot-reload failures don't kill the session.
             # Exit codes: 0 = clean exit (user quit), anything else = crash/reload failure -> restart.
