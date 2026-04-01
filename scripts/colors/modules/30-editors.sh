@@ -101,7 +101,7 @@ return {
   {
     "bjarneo/aether.nvim",
     branch = "v3",
-    name = "aether",
+    name = "Inir",
     priority = 1000,
     opts = {
       colors = {
