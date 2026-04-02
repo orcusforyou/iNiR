@@ -28,21 +28,6 @@
 
 ---
 
-## What is iNiR
-
-iNiR is an **opinionated desktop shell** — not a framework, not a dotfiles repo.
-
-### Compositor Support
-
-| | Niri | Hyprland |
-|:--|:--:|:--:|
-| Panels & overlays | Full | Full |
-| Workspace overview | Adapted for scrolling model | Standard grid |
-| Window management | Native IPC | Native IPC |
-| Keybind cheatsheet | Parsed from niri config | Not available |
-
----
-
 ## Screenshots
 
 <details open>
