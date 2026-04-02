@@ -30,14 +30,7 @@
 
 ## What is iNiR
 
-iNiR is an **opinionated desktop shell** — not a framework, not a dotfiles repo. You install it, pick a wallpaper, and everything works: panels, notifications, theming, widgets, app integration. Users configure behavior through a **settings UI**, not by writing QML.
-
-Originally forked from [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) (illogical-impulse). Now its own project with versioned releases, migrations, and update rollback.
-
-**What it is NOT:**
-- Not a framework — you use it as-is, not build on top of it
-- Not a rice — it's a structured project with CI, packaging, and multi-distro support
-- Not Hyprland-only — built for **Niri**, maintained on Hyprland too
+iNiR is an **opinionated desktop shell** — not a framework, not a dotfiles repo.
 
 ### Compositor Support
 
