@@ -2,27 +2,35 @@
   <img src="https://github.com/user-attachments/assets/da6beb4a-ccee-40ba-a372-5eea77b595f8" alt="iNiR" width="800">
 </p>
 
-<p align="center">
-  🌐 <b>Языки:</b> <a href="README.md">English</a> | <a href="README.es.md">Español</a> | <a href="README.ru.md">Русский</a>
-</p>
-
 <h1 align="center">iNiR</h1>
 
 <p align="center">
-  <b>Полноценный десктопный шелл на Quickshell для композитора Niri</b><br>
-  <sub>Изначально форк illogical-impulse от end-4 — вырос в самостоятельный проект</sub>
+  <b>Полноценный десктопный шелл для Niri на базе Quickshell</b>
 </p>
 
 <p align="center">
-  <a href="docs/INSTALL.md">Установка</a> •
-  <a href="docs/KEYBINDS.md">Клавиши</a> •
-  <a href="docs/IPC.md">Справка IPC</a> •
-  <a href="https://discord.gg/pAPTfAhZUJ">Discord</a>
+  <a href="https://github.com/snowarch/inir/releases"><img src="https://img.shields.io/badge/version-2.17.1-blue?style=flat-square" alt="Version"></a>
+  <a href="https://github.com/snowarch/inir/stargazers"><img src="https://img.shields.io/github/stars/snowarch/inir?style=flat-square" alt="Stars"></a>
+  <a href="https://discord.gg/pAPTfAhZUJ"><img src="https://img.shields.io/badge/Discord-join-5865F2?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
+</p>
+
+<p align="center">
+  <a href="../INSTALL.md">Установка</a> &bull;
+  <a href="../KEYBINDS.md">Клавиши</a> &bull;
+  <a href="../IPC.md">Справка IPC</a> &bull;
+  <a href="https://discord.gg/pAPTfAhZUJ">Discord</a> &bull;
+  <a href="../../CONTRIBUTING.md">Участие</a>
+</p>
+
+<p align="center">
+  <sub>
+    <a href="../../README.md">English</a> · <a href="README.es.md">Español</a> · <a href="README.ru.md">Русский</a> · <a href="README.zh.md">中文</a> · <a href="README.ja.md">日本語</a> · <a href="README.pt.md">Português</a> · <a href="README.fr.md">Français</a> · <a href="README.de.md">Deutsch</a> · <a href="README.ko.md">한국어</a> · <a href="README.hi.md">हिन्दी</a> · <a href="README.ar.md">العربية</a> · <a href="README.it.md">Italiano</a>
+  </sub>
 </p>
 
 ---
 
-> ⚠️ **О переводе:** Перевод от сообщества. Если что-то непонятно — смотрите [английскую версию](README.md).
+> **О переводе:** Перевод от сообщества. Если что-то непонятно — смотрите [английскую версию](../../README.md).
 
 ---
 
@@ -52,9 +60,23 @@
 
 ## Возможности
 
+**Два семейства панелей**, переключаемые на лету через `Super+Shift+W`:
+- **Material ii** — плавающая панель, сайдбары, док, 5 визуальных стилей (material, cards, aurora, inir, angel)
+- **Waffle** — панель задач в стиле Windows 11, стартовое меню, центр действий, центр уведомлений
+
+**Автоматическая тематизация** — выбираете обои и всё подстраивается:
+- Цвета шелла через Material You, распространяются на GTK3/4, Qt, терминалы, Firefox, Discord, SDDM
+- 10 терминальных инструментов с авто-темой (foot, kitty, alacritty, starship, fuzzel, btop, lazygit, yazi)
+- Пресеты тем: Gruvbox, Catppuccin, Rosé Pine, и пользовательские
+
+**Композитор** — создан для Niri.
+
+<details>
+<summary><b>Полный список возможностей</b></summary>
+
 ### Темы и внешний вид
 
-Выбираете обои — и всё адаптируется: шелл, GTK/Qt приложения, терминалы, Firefox, Discord, даже экран входа SDDM. Автоматически.
+Выбираете обои — и вся система подстраивается: шелл, GTK/Qt приложения, терминалы, Firefox, Discord, экран входа SDDM. Автоматически.
 
 - **5 визуальных стилей** — Material (сплошной), Cards, Aurora (стеклянное размытие), iNiR (в духе TUI), Angel (нео-брутализм)
 - **Динамические цвета обоев** через Material You — распространяются на всю систему
@@ -65,17 +87,9 @@
 - **Тема SDDM** — цвета Material You, синхронизированные с обоями
 - **Виджеты рабочего стола** — часы (несколько стилей), погода, медиа-контролы на слое обоев
 
-### Два семейства панелей
-
-Переключайтесь между ними на лету через `Super+Shift+W`:
-
-- **Material ii** — плавающая панель (сверху/снизу, 4 стиля углов), сайдбары, док (все 4 позиции), панель управления, вертикальная панель
-- **Waffle** — панель задач в стиле Windows 11, стартовое меню, центр действий, центр уведомлений, панель виджетов, обзор задач
-
 ### Сайдбары и виджеты (Material ii)
 
-Левый сайдбар работает как панель приложений:
-
+Левый сайдбар (панель приложений):
 - **AI-чат** — Gemini, Mistral, OpenRouter или локальные модели через Ollama
 - **YT Music** — полноценный плеер с поиском, очередью и управлением
 - **Браузер Wallhaven** — поиск и установка обоев напрямую
@@ -84,11 +98,10 @@
 - **Переводчик** — через Gemini или translate-shell
 - **Перетаскиваемые виджеты** — криптовалюты, медиаплеер, быстрые заметки, статус-кольца, недельный календарь
 
-Правый сайдбар — всё на каждый день:
-
+Правый сайдбар:
 - **Календарь** с интеграцией событий
 - **Центр уведомлений**
-- **Быстрые переключатели** — WiFi, Bluetooth, ночной свет, DND, профили питания, WARP VPN, EasyEffects (Android или классический стиль)
+- **Быстрые переключатели** — WiFi, Bluetooth, ночной свет, DND, профили питания, WARP VPN, EasyEffects
 - **Микшер громкости** — управление по приложениям
 - **Bluetooth и WiFi** — управление устройствами
 - **Таймер помодоро**, **список задач**, **калькулятор**, **блокнот**
@@ -110,41 +123,45 @@
 
 - **GUI настройки** — настраивайте всё без редактирования файлов
 - **GameMode** — автоматически отключает эффекты при полноэкранных приложениях
-- **Авто-обновления** — `./setup update` с откатом, миграциями и сохранением пользовательских изменений
+- **Авто-обновления** — `inir update` с откатом, миграциями и сохранением пользовательских изменений
 - **Экран блокировки** и **экран сессии** (выход/перезагрузка/выключение/сон)
 - **Polkit-агент**, **экранная клавиатура**, **менеджер автозапуска**
-- **15+ языков** — автоопределение, с генерацией переводов через AI
+- **9 языков** — автоопределение, с генерацией переводов через AI
 - **Ночной свет** — по расписанию или вручную
 - **Погода** — Open-Meteo, поддержка GPS, координат или названия города
 - **Управление батареей** — настраиваемые пороги, авто-сон при критическом заряде
 - **Проверка обновлений шелла** — уведомляет о новых версиях
 
+</details>
+
 ---
 
 ## Быстрый старт
 
-**Arch Linux:**
-
 ```bash
 git clone https://github.com/snowarch/inir.git
 cd inir
-./setup install       # Интерактивный — спрашивает перед каждым шагом
-./setup install -y    # Автоматический — устанавливает всё без вопросов
+./setup install       # интерактивный — спрашивает перед каждым шагом
+./setup install -y    # автоматический — устанавливает всё без вопросов
 ```
 
-Установщик разберётся с зависимостями, конфигами, тематизацией — всем.
-
-**Другие дистрибутивы:** Установщик полностью поддерживает только Arch. Руководство по ручной установке в [docs/INSTALL.md](docs/INSTALL.md).
-
-**Обновление:**
+Установщик разберётся с зависимостями, системным конфигом, тематизацией — всем. После установки запустите `inir run` или перелогиньтесь.
 
 ```bash
-inir update           # Удобная обёртка над тем же update-потоком setup
+inir run                        # запустить шелл
+inir settings                   # открыть GUI настроек
+inir logs                       # проверить логи
+inir doctor                     # автодиагностика и исправление
+inir update                     # pull + миграции + перезапуск
 ```
 
-`inir update` и `./setup update` используют один и тот же механизм обновления. Используйте `inir update` как обычную launcher-команду, а `./setup` — когда нужен базовый entrypoint обслуживания или интерактивное TUI-меню.
+**Поддерживаемые дистрибутивы:** Arch (автоматический установщик). Другие дистрибутивы могут установить вручную — см. [PACKAGES.md](../PACKAGES.md).
 
-Синхронизация runtime не перезаписывает ваши конфиги напрямую. Когда релиз требует изменений конфигурации, миграции применяют их с защитой backup/rollback (`./setup rollback`).
+| Метод | Команда |
+|--------|---------|
+| Системная установка | `sudo make install && inir run` |
+| Меню TUI | `./setup` |
+| Откат | `./setup rollback` |
 
 ---
 
@@ -160,7 +177,13 @@ inir update           # Удобная обёртка над тем же update-
 | `Super+,` | Настройки |
 | `Super+Shift+W` | Переключение семейства панелей |
 
-Полный список и руководство по настройке: [docs/KEYBINDS.md](docs/KEYBINDS.md)
+Полный список: [KEYBINDS.md](../KEYBINDS.md)
+
+---
+
+## Обои
+
+15 обоев идут в комплекте. Больше — в [iNiR-Walls](https://github.com/snowarch/iNiR-Walls), подборка, хорошо работающая с пайплайном Material You.
 
 ---
 
@@ -168,37 +191,46 @@ inir update           # Удобная обёртка над тем же update-
 
 | | |
 |---|---|
-| [INSTALL.md](docs/INSTALL.md) | Руководство по установке |
-| [SETUP.md](docs/SETUP.md) | Команды setup — обновления, миграции, откат, удаление |
-| [KEYBINDS.md](docs/KEYBINDS.md) | Все горячие клавиши |
-| [IPC.md](docs/IPC.md) | IPC-цели для скриптов и пользовательских привязок |
-| [PACKAGES.md](docs/PACKAGES.md) | Каждый пакет и зачем он нужен |
-| [LIMITATIONS.md](docs/LIMITATIONS.md) | Известные ограничения и обходные пути |
-| [OPTIMIZATION.md](docs/OPTIMIZATION.md) | Руководство по производительности QML для контрибьюторов |
+| [INSTALL.md](../INSTALL.md) | Руководство по установке |
+| [SETUP.md](../SETUP.md) | Команды setup — обновления, миграции, откат |
+| [KEYBINDS.md](../KEYBINDS.md) | Все горячие клавиши |
+| [IPC.md](../IPC.md) | IPC-цели для скриптов и пользовательских привязок |
+| [PACKAGES.md](../PACKAGES.md) | Каждый пакет и зачем он нужен |
+| [LIMITATIONS.md](../LIMITATIONS.md) | Известные ограничения и обходные пути |
+| [ARCHITECTURE.md](../ARCHITECTURE.md) | Техническая архитектура проекта |
 
 ---
 
 ## Решение проблем
 
 ```bash
-inir logs                       # Проверьте логи — ответ обычно там
-inir restart                    # Перезапустить шелл
-./setup doctor                  # Автодиагностика и исправление типичных проблем
-./setup rollback                # Откатить последнее обновление
+inir logs                       # проверьте логи — ответ обычно там
+inir restart                    # перезапустить шелл
+inir repair                     # doctor + перезапуск + проверка логов
+./setup doctor                  # автодиагностика и исправление типичных проблем
+./setup rollback                # откатить последнее обновление
 ```
 
-Загляните в [LIMITATIONS.md](docs/LIMITATIONS.md) перед открытием issue — возможно, это уже задокументировано.
+Загляните в [LIMITATIONS.md](../LIMITATIONS.md) перед открытием issue.
+
+---
+
+## Участие
+
+Смотрите [CONTRIBUTING.md](../../CONTRIBUTING.md) — настройка среды разработки, паттерны кода и правила PR.
 
 ---
 
 ## Благодарности
 
-- [**end-4**](https://github.com/end-4/dots-hyprland) — оригинальный illogical-impulse для Hyprland, с чего всё началось
+- [**end-4**](https://github.com/end-4/dots-hyprland) — оригинальный illogical-impulse для Hyprland
 - [**Quickshell**](https://quickshell.outfoxxed.me/) — фреймворк, на котором работает этот шелл
 - [**Niri**](https://github.com/YaLTeR/niri) — скроллинговый тайлинговый Wayland-композитор
 
 ---
 
 <p align="center">
-  <sub>Это личный проект. Он работает на моей машине. Ваш опыт может отличаться.</sub>
+  <a href="https://github.com/snowarch/inir/graphs/contributors">Участники</a> &bull;
+  <a href="CHANGELOG.md">Changelog</a> &bull;
+  <a href="LICENSE">Лицензия MIT</a>
 </p>
