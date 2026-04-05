@@ -72,7 +72,7 @@ Scope {
                     right: !root.isLeft || !root.isVertical
                 }
 
-                exclusiveZone: root.pinned ? (dockHeight + Appearance.sizes.elevationMargin) : 0
+                exclusiveZone: GameMode.active ? 0 : root.pinned ? (dockHeight + Appearance.sizes.elevationMargin) : 0
 
                 implicitWidth: root.isVertical ? (dockHeight + Appearance.sizes.elevationMargin + Appearance.sizes.hyprlandGapsOut) : dockBackground.implicitWidth
                 implicitHeight: root.isVertical ? dockBackground.implicitHeight : (dockHeight + Appearance.sizes.elevationMargin + Appearance.sizes.hyprlandGapsOut)
@@ -80,7 +80,7 @@ Scope {
                 WlrLayershell.namespace: "quickshell:dock"
                 color: "transparent"
 
-                mask: Region { item: dockMouseArea }
+                mask: Region { item: GameMode.active ? null : dockMouseArea }
 
                 MouseArea {
                     id: dockMouseArea
