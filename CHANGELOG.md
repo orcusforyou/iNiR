@@ -5,12 +5,24 @@ All notable changes to iNiR will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Complete Internationalization**: 14 new languages fully translated with 3400+ keys each (es_AR, fr_FR, de_DE, it_IT, pt_BR, ru_RU, uk_UA, hi_IN, ar_SA, he_HE, zh_CN, ja_JP, ko_KR, vi_VN).
+- **Translation Auto-Updater**: Added `translations/tools/auto-translate.js` script to bulk translate missing keys via Google Translate API without hitting limits.
+
+### Changed
+- **Bug Report Template**: Updated GitHub issue templates to require explicit Qt, Quickshell, and Distro version fields for better debugging.
+
+### Fixed
+- **Niri Display Config State**: Fixed combo box bindings breaking after user interaction. State is now imperatively resynced after output data refreshes, and reads are deferred by 300ms to avoid stale values.
+- **Settings Status Banner UI**: Improved the error/info status banner in NiriConfig with distinct colors (error/primary), larger icons, and solid-styled Dismiss/Retry buttons.
+
 ## [2.17.3] - 2026-04-04
 
 ### Added
 - **Configurable sidebar animations**: Sidebars now support 4 animation types — slide (default), fade, pop, and reveal — selectable from Settings > Panels. Uses Material Design motion tokens with enter/exit transitions.
 - **Lock screen video/GIF support**: Video and animated GIF wallpapers now render on the lock screen with first-frame fallback. Animation is off by default (Settings > Lock Screen toggle). Supports both ii and waffle families including the Niri-safe variant.
-- **Version bump script**: `scripts/bump-version.sh` updates VERSION, all README badges, PKGBUILDs, and doc references in one command.
 
 ### Fixed
 - **YTMusic track selection race**: Clicking a song while another was playing could advance to the next track instead of the selected one. Added `_userInitiatedPlay` guard to suppress spurious `playNext()` from the old mpv's exit handler during the 200ms handoff window.
