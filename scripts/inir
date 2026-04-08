@@ -498,88 +498,37 @@ wait_for_stop() {
     return 1
 }
 
+is_inir_service_enabled() {
+    if ! command -v systemctl >/dev/null 2>&1; then
+        return 1
+    fi
+
+    local state
+    state="$(systemctl --user is-enabled inir.service 2>/dev/null || true)"
+    [[ "$state" == "enabled" || "$state" == "enabled-runtime" || "$state" == "static" || "$state" == "linked" || "$state" == "linked-runtime" ]]
+}
+
+start_inir_service_if_enabled() {
+    if is_inir_service_enabled; then
+        systemctl --user reset-failed inir.service >/dev/null 2>&1 || true
+        systemctl --user start inir.service >/dev/null 2>&1 || true
+        return 0
+    fi
+
+    return 1
+}
+
 start_background() {
     local dir="$1"
-    local scale="${QT_SCALE_FACTOR:-1}"
-    nohup /usr/bin/env bash -c '
-        set -euo pipefail
-        qs_bin="$1"
-        config_dir="$2"
-        export QT_SCALE_FACTOR="$3"
-        max_rapid="$4"
-        window="$5"
+    if start_inir_service_if_enabled; then
+        return 0
+    fi
 
-        child_pid=""
-        cleanup() { [[ -n "$child_pid" ]] && kill "$child_pid" 2>/dev/null; exit 0; }
-        trap cleanup TERM INT
-
-        restart_count=0
-        window_start="$(date +%s)"
-        while true; do
-            "$qs_bin" -n -p "$config_dir" &
-            child_pid=$!
-            set +e
-            wait "$child_pid" 2>/dev/null
-            exit_code=$?
-            set -e
-            child_pid=""
-            [[ $exit_code -eq 0 ]] && break
-            now="$(date +%s)"
-            if (( now - window_start > window )); then
-                restart_count=0
-                window_start="$now"
-            fi
-            restart_count=$((restart_count + 1))
-            if (( restart_count > max_rapid )); then
-                echo "[inir] quickshell crashed $restart_count times in ${window}s — giving up. Run '\''inir start'\'' manually." >&2
-                exit 1
-            fi
-            echo "[inir] quickshell exited with code $exit_code, restarting ($restart_count/$max_rapid)..." >&2
-            sleep 1
-        done
-    ' _ "$qs_bin" "$dir" "$scale" "$max_rapid_restarts" "$restart_window" >/dev/null 2>&1 &
+    nohup "$qs_bin" -n -d -p "$dir" >/dev/null 2>&1 &
 }
 
 kill_wrapper() {
-    local dir="$1"
-    local my_pid="$$"
-    local escaped_dir
-    escaped_dir="$(printf '%s' "$dir" | sed 's/[.[\*^$()+|/]/\\&/g')"
-    # Match the inline wrapper script (nohup background mode): it always has qs_bin=,
-    # config_dir=, while true, and the config dir appears as a positional argument.
-    local bg_pids
-    bg_pids="$(pgrep -f "qs_bin=.*while true.*${escaped_dir}" 2>/dev/null || true)"
-    # Match foreground 'inir run' processes that spawned qs for THIS config dir.
-    # The cmdline is: bash <path-to-inir> run [--flags...]
-    # Their child qs process uses -p <dir>, so we find 'inir run' parents of qs children
-    # that reference our config dir. Simpler: find 'inir run' processes whose children
-    # include a qs process pointed at our dir.
-    local fg_pids=""
-    local candidate_pids
-    candidate_pids="$(pgrep -f "inir.* run" 2>/dev/null || true)"
-    if [[ -n "$candidate_pids" ]]; then
-        while IFS= read -r cpid; do
-            [[ -n "$cpid" ]] || continue
-            [[ "$cpid" == "$my_pid" ]] && continue
-            # Check if this process has a child qs pointed at our config dir.
-            local child_match
-            child_match="$(pgrep -P "$cpid" -f "${qs_bin}.*-p.*${escaped_dir}" 2>/dev/null || true)"
-            if [[ -n "$child_match" ]]; then
-                fg_pids="${fg_pids:+${fg_pids}$'\n'}${cpid}"
-            fi
-        done <<< "$candidate_pids"
-    fi
-    # Merge both sets, deduplicate.
-    local all_pids
-    all_pids="$(printf '%s\n%s' "$bg_pids" "$fg_pids" | grep -v '^$' | sort -u)"
-    if [[ -n "$all_pids" ]]; then
-        while IFS= read -r pid; do
-            [[ -n "$pid" ]] || continue
-            kill "$pid" >/dev/null 2>&1 || true
-        done <<< "$all_pids"
-        # Give the wrapper's trap handler a moment to clean up its qs child.
-        sleep 0.3
-    fi
+    return 0
 }
 
 kill_shell() {
@@ -625,6 +574,17 @@ force_kill_qml_window() {
 restart_shell() {
     local dir="$1"
     local quiet="${2:-}"
+
+    if start_inir_service_if_enabled; then
+        [[ -z "$quiet" ]] && printf 'Restarting iNiR service... '
+        systemctl --user restart inir.service >/dev/null 2>&1 || true
+        if ! wait_for_start "$dir"; then
+            echo "Timed out waiting for iNiR to start" >&2
+            exit 1
+        fi
+        [[ -z "$quiet" ]] && printf 'done.\n'
+        return 0
+    fi
 
     if has_instances "$dir"; then
         [[ -z "$quiet" ]] && printf 'Stopping iNiR... '
@@ -1020,6 +980,36 @@ require_command() {
     fi
 }
 
+is_inir_service_active() {
+    if ! command -v systemctl >/dev/null 2>&1; then
+        return 1
+    fi
+
+    systemctl --user is-active --quiet inir.service >/dev/null 2>&1
+}
+
+is_current_process_inir_service() {
+    grep -q '/inir\.service' "/proc/$$/cgroup" 2>/dev/null
+}
+
+stop_inir_service_if_active() {
+    if is_inir_service_active; then
+        systemctl --user stop inir.service >/dev/null 2>&1 || true
+        return 0
+    fi
+
+    return 1
+}
+
+restart_inir_service_if_active() {
+    if is_inir_service_active; then
+        systemctl --user restart inir.service >/dev/null 2>&1 || true
+        return 0
+    fi
+
+    return 1
+}
+
 install_user_service() {
     local setup_dir
     local asset_path
@@ -1394,6 +1384,7 @@ case "$command_name" in
             esac
         done
         resolve_config_dir
+        stop_inir_service_if_active
         kill_shell "$config_dir"
         ;;
     run)
@@ -1433,30 +1424,16 @@ case "$command_name" in
             echo "iNiR is already running. Use 'inir restart' to restart." >&2
             exit 0
         fi
+        if [[ "$foreground" == true ]] && is_inir_service_active; then
+            if ! is_current_process_inir_service; then
+                echo "iNiR is managed by inir.service. Stop it first before running manually." >&2
+                exit 1
+            fi
+        fi
         if [[ "$foreground" == true ]]; then
-            # Run with a restart loop so hot-reload failures don't kill the session.
-            # Exit codes: 0 = clean exit (user quit), anything else = crash/reload failure -> restart.
-            restart_count=0
-            window_start="$(date +%s)"
-            while true; do
-                set +e
-                "$qs_bin" -n -p "$config_dir"
-                exit_code=$?
-                set -e
-                [[ $exit_code -eq 0 ]] && break
-                now="$(date +%s)"
-                if (( now - window_start > restart_window )); then
-                    restart_count=0
-                    window_start="$now"
-                fi
-                restart_count=$((restart_count + 1))
-                if (( restart_count > max_rapid_restarts )); then
-                    echo "[inir] quickshell crashed $restart_count times in ${restart_window}s — giving up." >&2
-                    exit 1
-                fi
-                echo "[inir] quickshell exited with code $exit_code, restarting ($restart_count/$max_rapid_restarts)..." >&2
-                sleep 1
-            done
+            exec "$qs_bin" -n -p "$config_dir"
+        fi
+        if start_inir_service_if_enabled; then
             exit 0
         fi
         exec "$qs_bin" -n -d -p "$config_dir"
@@ -1489,6 +1466,9 @@ case "$command_name" in
         apply_qt_runtime_env
         apply_qt_logging_rules
         check_qs_abi
+        if restart_inir_service_if_active; then
+            exit 0
+        fi
         restart_shell "$config_dir" "$restart_quiet"
         ;;
     kill)
@@ -1510,6 +1490,7 @@ case "$command_name" in
             esac
         done
         resolve_config_dir
+        stop_inir_service_if_active
         kill_shell "$config_dir"
         ;;
     logs)

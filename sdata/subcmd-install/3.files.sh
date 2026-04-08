@@ -165,6 +165,21 @@ case "${SKIP_QUICKSHELL}" in
       log_success "Launcher path configured for interactive shells"
     fi
 
+    local _service_refresh_status=1
+    if sync_user_inir_service_from_repo_if_present; then
+      _service_refresh_status=0
+    else
+      _service_refresh_status=$?
+    fi
+    if [[ $_service_refresh_status -eq 0 ]]; then
+      log_success "User inir.service refreshed"
+    fi
+
+    if [[ -f "${XDG_CONFIG_HOME}/systemd/user/inir.service" ]]; then
+      systemctl --user enable inir.service >/dev/null 2>&1 || true
+      log_success "User inir.service enabled"
+    fi
+
     if [[ -f "${REPO_ROOT}/assets/icons/desktop-symbolic.svg" ]]; then
       install_file "${REPO_ROOT}/assets/icons/desktop-symbolic.svg" "${INIR_ICON_DIR}/inir.svg"
       log_success "Launcher icon installed"
@@ -276,9 +291,6 @@ case "${SKIP_NIRI}" in
         -e 's|spawn "bash" "-lc" "exec \"\$(inir path)/scripts/launch-terminal.sh\""|spawn "'"${_launcher_path_escaped}"'" "terminal"|' \
         -e 's|spawn "bash" "-lc" "exec \"\$(inir path)/scripts/close-window.sh\""|spawn "'"${_launcher_path_escaped}"'" "close-window"|' \
         "$NIRI_BINDS_TARGET"
-      sed -i \
-        -e 's|spawn-at-startup "inir" "start"|spawn-at-startup "'"${_launcher_path_escaped}"'" "start"|' \
-        "$NIRI_STARTUP_TARGET"
       sed -i \
         -e 's|spawn "inir" "|spawn "'"${_launcher_path_escaped}"'" "|g' \
         "$NIRI_BINDS_TARGET"

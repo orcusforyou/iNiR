@@ -190,6 +190,56 @@ sync_launcher_from_repo() {
     fi
 }
 
+sync_user_inir_service_from_repo_if_present() {
+    local service_asset="${REPO_ROOT}/assets/systemd/inir.service"
+    local service_target_dir="${XDG_CONFIG_HOME}/systemd/user"
+    local service_target="${service_target_dir}/inir.service"
+    local launcher_target="${XDG_BIN_HOME}/inir"
+    local tmp_file
+    local changed=false
+
+    [[ -f "$service_asset" ]] || return 1
+    [[ -f "$service_target" ]] || return 1
+
+    mkdir -p "$service_target_dir"
+    mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}"
+    tmp_file="${XDG_CACHE_HOME:-$HOME/.cache}/inir.service.$$"
+
+    sed "s|^ExecStart=.*|ExecStart=${launcher_target//&/\\&} run --session|" "$service_asset" > "$tmp_file"
+
+    if ! cmp -s "$tmp_file" "$service_target"; then
+        changed=true
+        cp -f "$tmp_file" "$service_target"
+    fi
+
+    rm -f "$tmp_file"
+
+    if [[ "$changed" == true ]] && command -v systemctl >/dev/null 2>&1; then
+        systemctl --user daemon-reload >/dev/null 2>&1 || true
+    fi
+
+    if [[ "$changed" == true ]]; then
+        return 0
+    fi
+
+    return 1
+}
+
+ensure_user_inir_service_enabled() {
+    if ! command -v systemctl >/dev/null 2>&1; then
+        return 1
+    fi
+
+    local service_path="${XDG_CONFIG_HOME}/systemd/user/inir.service"
+    if [[ ! -f "$service_path" ]]; then
+        return 1
+    fi
+
+    systemctl --user daemon-reload >/dev/null 2>&1 || true
+    systemctl --user enable inir.service >/dev/null 2>&1 || true
+    return 0
+}
+
 ###############################################################################
 # Help
 ###############################################################################
@@ -1665,6 +1715,8 @@ run_update() {
         fi
     fi
 
+    local _service_refresh_status=1
+
     if [[ -f "${REPO_ROOT}/assets/icons/desktop-symbolic.svg" ]]; then
         local icon_target_dir="${XDG_DATA_HOME}/icons/hicolor/scalable/apps"
         mkdir -p "$icon_target_dir"
@@ -1751,22 +1803,24 @@ run_update() {
         fi
     fi
 
+    _service_refresh_status=1
+    if sync_user_inir_service_from_repo_if_present; then
+        _service_refresh_status=0
+    else
+        _service_refresh_status=$?
+    fi
+    if [[ $_service_refresh_status -eq 0 ]]; then
+        tui_success "Updated existing user inir.service"
+    fi
+
+    ensure_user_inir_service_enabled >/dev/null 2>&1 || true
+
     local niri_config="${XDG_CONFIG_HOME}/niri/config.kdl"
     local niri_startup_cfg="${XDG_CONFIG_HOME}/niri/config.d/50-startup.kdl"
     local niri_binds_cfg="${XDG_CONFIG_HOME}/niri/config.d/70-binds.kdl"
     if [[ -f "$niri_config" && -x "${XDG_BIN_HOME}/inir" ]]; then
         local launcher_target_escaped="${XDG_BIN_HOME}/inir"
         launcher_target_escaped="${launcher_target_escaped//&/\\&}"
-        if [[ -f "$niri_startup_cfg" ]]; then
-            sed -i \
-                -e 's|spawn-at-startup "inir" "start"|spawn-at-startup "'"${launcher_target_escaped}"'" "start"|' \
-                "$niri_startup_cfg"
-        else
-            sed -i \
-                -e 's|spawn-at-startup "inir" "start"|spawn-at-startup "'"${launcher_target_escaped}"'" "start"|' \
-                "$niri_config"
-        fi
-
         if [[ -f "$niri_binds_cfg" ]]; then
             sed -i \
                 -e 's|spawn "bash" "-lc" "exec \"\$(inir path)/scripts/launch-terminal.sh\""|spawn "'"${launcher_target_escaped}"'" "terminal"|' \
@@ -1809,7 +1863,10 @@ run_update() {
     echo ""
     if [[ -n "$NIRI_SOCKET" ]] || [[ -n "$WAYLAND_DISPLAY" ]]; then
         tui_info "Restarting shell..."
-        if [[ -x "${II_TARGET}/scripts/inir" ]]; then
+        if command -v systemctl >/dev/null 2>&1 && systemctl --user cat inir.service >/dev/null 2>&1; then
+            nohup systemctl --user restart inir.service >/dev/null 2>&1 &
+            disown
+        elif [[ -x "${II_TARGET}/scripts/inir" ]]; then
             nohup bash "${II_TARGET}/scripts/inir" restart -c "${II_TARGET}" >/dev/null 2>&1 &
             disown
         else
