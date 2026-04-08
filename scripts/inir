@@ -577,12 +577,7 @@ restart_shell() {
 
     if start_inir_service_if_enabled; then
         [[ -z "$quiet" ]] && printf 'Restarting iNiR service... '
-        systemctl --user restart inir.service >/dev/null 2>&1 || true
-        if ! wait_for_start "$dir"; then
-            echo "Timed out waiting for iNiR to start" >&2
-            exit 1
-        fi
-        [[ -z "$quiet" ]] && printf 'done.\n'
+        restart_inir_service_or_fail "$dir" "$quiet"
         return 0
     fi
 
@@ -1003,11 +998,53 @@ stop_inir_service_if_active() {
 
 restart_inir_service_if_active() {
     if is_inir_service_active; then
+        systemctl --user reset-failed inir.service >/dev/null 2>&1 || true
         systemctl --user restart inir.service >/dev/null 2>&1 || true
         return 0
     fi
 
     return 1
+}
+
+report_inir_service_failure() {
+    local lines="${1:-20}"
+
+    if ! command -v systemctl >/dev/null 2>&1; then
+        return 1
+    fi
+
+    printf '\n\033[31m── inir.service status ──\033[0m\n' >&2
+    systemctl --user status inir.service --no-pager 2>&1 | sed -n '1,18p' >&2 || true
+
+    if command -v journalctl >/dev/null 2>&1; then
+        printf '\n\033[31m── recent inir.service logs ──\033[0m\n' >&2
+        journalctl --user-unit inir.service -n "$lines" --no-pager 2>&1 >&2 || true
+    fi
+
+    return 0
+}
+
+restart_inir_service_or_fail() {
+    local dir="$1"
+    local quiet="${2:-}"
+
+    systemctl --user reset-failed inir.service >/dev/null 2>&1 || true
+    systemctl --user restart inir.service >/dev/null 2>&1 || true
+
+    if ! wait_for_start "$dir"; then
+        echo "Timed out waiting for iNiR to start" >&2
+        report_inir_service_failure
+        exit 1
+    fi
+
+    if ! systemctl --user is-active --quiet inir.service >/dev/null 2>&1; then
+        echo "iNiR service failed to start" >&2
+        report_inir_service_failure
+        exit 1
+    fi
+
+    [[ -z "$quiet" ]] && printf 'done.\n'
+    return 0
 }
 
 install_user_service() {
@@ -1467,6 +1504,8 @@ case "$command_name" in
         apply_qt_logging_rules
         check_qs_abi
         if restart_inir_service_if_active; then
+            [[ -z "$restart_quiet" ]] && printf 'Restarting iNiR service... '
+            restart_inir_service_or_fail "$config_dir" "$restart_quiet"
             exit 0
         fi
         restart_shell "$config_dir" "$restart_quiet"
