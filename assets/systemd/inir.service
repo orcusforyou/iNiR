@@ -8,10 +8,13 @@ Wants=graphical-session.target
 Type=simple
 ExecStart=/usr/bin/inir run --session
 SuccessExitStatus=143
-KillMode=process
+KillMode=control-group
+KillSignal=SIGTERM
 Restart=on-failure
-RestartSec=2
-TimeoutStopSec=10
+RestartSec=3
+StartLimitIntervalSec=30
+StartLimitBurst=5
+TimeoutStopSec=15
 
 [Install]
 WantedBy=graphical-session.target

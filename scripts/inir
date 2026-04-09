@@ -524,8 +524,58 @@ is_inir_service_enabled() {
     [[ "$state" == "enabled" || "$state" == "enabled-runtime" || "$state" == "static" || "$state" == "linked" || "$state" == "linked-runtime" ]]
 }
 
+ensure_systemd_graphical_env() {
+    # Ensure the systemd user manager has critical graphical session variables.
+    # Some sessions/DMs don't export these to systemd, which breaks the shell.
+    local vars_to_import=()
+
+    # Check what systemd already has
+    local sys_env
+    sys_env="$(systemctl --user show-environment 2>/dev/null || true)"
+
+    # WAYLAND_DISPLAY — required for Quickshell to connect to compositor
+    if ! grep -q '^WAYLAND_DISPLAY=' <<< "$sys_env" 2>/dev/null; then
+        local wl_sock=""
+        local candidate
+        for candidate in /run/user/"$(id -u)"/wayland-[0-9]; do
+            if [[ -S "$candidate" ]]; then
+                wl_sock="$(basename "$candidate")"
+                break
+            fi
+        done
+        if [[ -n "$wl_sock" ]]; then
+            vars_to_import+=("WAYLAND_DISPLAY=$wl_sock")
+        fi
+    fi
+
+    # QT_QPA_PLATFORMTHEME — required for icon theme resolution
+    if ! grep -q '^QT_QPA_PLATFORMTHEME=' <<< "$sys_env" 2>/dev/null; then
+        if command -v kwriteconfig6 &>/dev/null; then
+            vars_to_import+=("QT_QPA_PLATFORMTHEME=kde")
+        elif command -v gsettings &>/dev/null; then
+            vars_to_import+=("QT_QPA_PLATFORMTHEME=gtk3")
+        fi
+    fi
+
+    # XDG_DATA_DIRS — required for icon/theme/app discovery
+    if ! grep -q '^XDG_DATA_DIRS=' <<< "$sys_env" 2>/dev/null; then
+        vars_to_import+=("XDG_DATA_DIRS=/usr/local/share:/usr/share")
+    fi
+
+    # XDG_CURRENT_DESKTOP — used by portal and theme detection
+    if ! grep -q '^XDG_CURRENT_DESKTOP=' <<< "$sys_env" 2>/dev/null; then
+        vars_to_import+=("XDG_CURRENT_DESKTOP=niri")
+    fi
+
+    if [[ ${#vars_to_import[@]} -gt 0 ]]; then
+        systemctl --user set-environment "${vars_to_import[@]}" 2>/dev/null || true
+    fi
+}
+
 start_inir_service_if_enabled() {
     if is_inir_service_enabled; then
+        ensure_service_unit_available
+        ensure_systemd_graphical_env
         systemctl --user reset-failed inir.service >/dev/null 2>&1 || true
         systemctl --user start inir.service >/dev/null 2>&1 || true
         return 0
@@ -536,7 +586,11 @@ start_inir_service_if_enabled() {
 
 start_background() {
     local dir="$1"
-    if start_inir_service_if_enabled; then
+    if is_inir_service_enabled; then
+        ensure_service_unit_available
+        ensure_systemd_graphical_env
+        systemctl --user reset-failed inir.service >/dev/null 2>&1 || true
+        systemctl --user start inir.service >/dev/null 2>&1 || true
         return 0
     fi
 
@@ -591,7 +645,8 @@ restart_shell() {
     local dir="$1"
     local quiet="${2:-}"
 
-    if start_inir_service_if_enabled; then
+    if is_inir_service_enabled; then
+        ensure_service_unit_available
         [[ -z "$quiet" ]] && printf 'Restarting iNiR service... '
         restart_inir_service_or_fail "$dir" "$quiet"
         return 0
@@ -1013,13 +1068,8 @@ stop_inir_service_if_active() {
 }
 
 restart_inir_service_if_active() {
-    if is_inir_service_active; then
-        systemctl --user reset-failed inir.service >/dev/null 2>&1 || true
-        systemctl --user restart inir.service >/dev/null 2>&1 || true
-        return 0
-    fi
-
-    return 1
+    # Only check — actual restart is done by restart_inir_service_or_fail.
+    is_inir_service_active
 }
 
 report_inir_service_failure() {
@@ -1044,6 +1094,8 @@ restart_inir_service_or_fail() {
     local dir="$1"
     local quiet="${2:-}"
 
+    ensure_service_unit_available
+    ensure_systemd_graphical_env
     systemctl --user reset-failed inir.service >/dev/null 2>&1 || true
     systemctl --user restart inir.service >/dev/null 2>&1 || true
 
@@ -1096,10 +1148,8 @@ uninstall_user_service() {
 }
 
 ensure_service_unit_available() {
-    if systemctl --user cat inir.service >/dev/null 2>&1; then
-        return
-    fi
-
+    # Always reinstall the service template to pick up improvements (e.g. KillMode,
+    # rate limits). install_user_service is cheap — just a sed + cp + daemon-reload.
     install_user_service >/dev/null
 }
 
@@ -1486,7 +1536,9 @@ case "$command_name" in
         if [[ "$foreground" == true ]]; then
             exec "$qs_bin" -n -p "$config_dir"
         fi
-        if start_inir_service_if_enabled; then
+        if is_inir_service_enabled; then
+            ensure_service_unit_available
+            start_inir_service_if_enabled
             exit 0
         fi
         exec "$qs_bin" -n -d -p "$config_dir"
