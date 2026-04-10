@@ -881,6 +881,33 @@ ContentPage {
             }
 
             ContentSubsection {
+                title: Translation.tr("YT Music")
+                tooltip: Translation.tr("Control how next-track notifications behave")
+                visible: Config.options.sidebar?.ytmusic?.enable ?? false
+
+                SettingsSwitch {
+                    buttonIcon: "music_note"
+                    text: Translation.tr("Up Next notifications")
+                    checked: Config.options.sidebar?.ytmusic?.upNextNotifications ?? true
+                    onCheckedChanged: Config.setNestedValue("sidebar.ytmusic.upNextNotifications", checked)
+                    StyledToolTip {
+                        text: Translation.tr("Show a desktop notification with the upcoming track when playback auto-advances")
+                    }
+                }
+
+                SettingsSwitch {
+                    buttonIcon: "sports_esports"
+                    text: Translation.tr("Mute while fullscreen or GameMode")
+                    enabled: Config.options.sidebar?.ytmusic?.upNextNotifications ?? true
+                    checked: Config.options.sidebar?.ytmusic?.suppressUpNextInFullscreen ?? true
+                    onCheckedChanged: Config.setNestedValue("sidebar.ytmusic.suppressUpNextInFullscreen", checked)
+                    StyledToolTip {
+                        text: Translation.tr("Suppress Up Next notifications when a fullscreen app is active or GameMode is enabled")
+                    }
+                }
+            }
+
+            ContentSubsection {
                 id: rightSidebarWidgets
                 title: Translation.tr("Right Sidebar")
                 tooltip: Translation.tr("Toggle which widgets appear in the right sidebar")

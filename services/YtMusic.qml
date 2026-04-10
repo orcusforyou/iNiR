@@ -34,6 +34,8 @@ Singleton {
     
     property bool shuffleMode: Config.options?.sidebar?.ytmusic?.shuffleMode ?? false
     property int repeatMode: Config.options?.sidebar?.ytmusic?.repeatMode ?? 0
+    readonly property bool upNextNotificationsEnabled: Config.options?.sidebar?.ytmusic?.upNextNotifications ?? true
+    readonly property bool suppressUpNextInFullscreen: Config.options?.sidebar?.ytmusic?.suppressUpNextInFullscreen ?? true
     
     onShuffleModeChanged: Config.setNestedValue('sidebar.ytmusic.shuffleMode', shuffleMode)
     onRepeatModeChanged: Config.setNestedValue('sidebar.ytmusic.repeatMode', repeatMode)
@@ -493,9 +495,16 @@ Singleton {
         root.repeatMode = (root.repeatMode + 1) % 3
     }
 
+    function _shouldNotifyUpcomingTrack(): bool {
+        if (!root.upNextNotificationsEnabled) return false
+        if (Config.options?.notifications?.silent ?? false) return false
+        if (root.suppressUpNextInFullscreen && (GameMode.active || GameMode.hasAnyFullscreenWindow)) return false
+        return true
+    }
+
     function _notifyUpcomingTrack(item): void {
         if (!item) return
-        if (Config.options?.notifications?.silent ?? false) return
+        if (!root._shouldNotifyUpcomingTrack()) return
 
         const title = String(item.title ?? "").trim()
         if (!title) return
