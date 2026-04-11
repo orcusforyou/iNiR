@@ -94,6 +94,8 @@ Singleton {
     
     property bool shuffleMode: Config.options?.sidebar?.ytmusic?.shuffleMode ?? false
     property int repeatMode: Config.options?.sidebar?.ytmusic?.repeatMode ?? 0
+    readonly property bool upNextNotificationsEnabled: Config.options?.sidebar?.ytmusic?.upNextNotifications ?? true
+    readonly property bool suppressUpNextInFullscreen: Config.options?.sidebar?.ytmusic?.suppressUpNextInFullscreen ?? true
     
     onShuffleModeChanged: Config.setNestedValue('sidebar.ytmusic.shuffleMode', shuffleMode)
     onRepeatModeChanged: Config.setNestedValue('sidebar.ytmusic.repeatMode', repeatMode)
@@ -337,7 +339,7 @@ Singleton {
             // Also guard against stale EOF from old mpv when user initiated a new play.
             if (root._ipcEofReached && !root._autoAdvanceTriggered && !root._userInitiatedPlay && root.currentVideoId !== "") {
                 root._autoAdvanceTriggered = true
-                root.playNext()
+                root.playNext(true)
             }
         }
     }
@@ -579,7 +581,33 @@ Singleton {
         root.repeatMode = (root.repeatMode + 1) % 3
     }
 
-    function playNext(): void {
+    function _shouldNotifyUpcomingTrack(): bool {
+        if (!root.upNextNotificationsEnabled) return false
+        if (Config.options?.notifications?.silent ?? false) return false
+        if (root.suppressUpNextInFullscreen && (GameMode.active || GameMode.hasAnyFullscreenWindow)) return false
+        return true
+    }
+
+    function _notifyUpcomingTrack(item): void {
+        if (!item) return
+        if (!root._shouldNotifyUpcomingTrack()) return
+
+        const title = String(item.title ?? "").trim()
+        if (!title) return
+        const artist = String(item.artist ?? "").trim()
+        const body = artist.length > 0 ? `${title} - ${artist}` : title
+
+        Quickshell.execDetached([
+            "/usr/bin/notify-send",
+            Translation.tr("Up Next"),
+            body,
+            "-a", "YtMusic",
+            "-i", "audio-x-generic"
+        ])
+    }
+
+    function playNext(notifyUpcoming): void {
+        notifyUpcoming = (notifyUpcoming === true)
         root._log("[YtMusic] playNext called. activePlaylist.length=" + activePlaylist.length + " currentIndex=" + currentIndex + " source=" + activePlaylistSource)
         
         if (root.repeatMode === 1 && root.currentVideoId) {
@@ -599,6 +627,8 @@ Singleton {
             
             if (nextIndex >= root.activePlaylist.length) {
                 if (root.queue.length > 0) {
+                    if (notifyUpcoming)
+                        root._notifyUpcomingTrack(root.queue[0])
                     playFromQueue(0)
                     return
                 }
@@ -609,12 +639,17 @@ Singleton {
                 }
             }
             
+            const nextItem = root.activePlaylist[nextIndex]
+            if (notifyUpcoming)
+                root._notifyUpcomingTrack(nextItem)
             root.currentIndex = nextIndex
-            _playInternal(root.activePlaylist[nextIndex])
+            _playInternal(nextItem)
             return
         }
         
         if (root.queue.length > 0) {
+            if (notifyUpcoming)
+                root._notifyUpcomingTrack(root.queue[0])
             playFromQueue(0)
         }
     }
@@ -1780,7 +1815,7 @@ print("")
             if (root._didTrackEndNaturally(code, _stderr) && !root._autoAdvanceTriggered) {
                 // Track ended naturally, advance according to playlist/queue/repeat state
                 root._autoAdvanceTriggered = true
-                root.playNext()
+                root.playNext(true)
             } else if (code !== 0 && code !== 4 && code !== 9 && code !== 15 && code !== 143 && code !== 137) {
                 root.error = Translation.tr("Playback failed")
             }

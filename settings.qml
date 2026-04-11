@@ -798,6 +798,20 @@ ApplicationWindow {
         },
         {
             pageIndex: 5, pageName: pages[5].name,
+            section: Translation.tr("Sidebars"),
+            label: Translation.tr("YT Music Up Next notifications"),
+            description: Translation.tr("Enable or disable next-track notifications for YT Music auto-advance"),
+            keywords: ["ytmusic", "youtube", "music", "up next", "notification", "auto", "advance"]
+        },
+        {
+            pageIndex: 5, pageName: pages[5].name,
+            section: Translation.tr("Sidebars"),
+            label: Translation.tr("YT Music fullscreen suppression"),
+            description: Translation.tr("Mute YT Music Up Next notifications during fullscreen apps or GameMode"),
+            keywords: ["ytmusic", "fullscreen", "gamemode", "mute", "suppress", "notification", "gaming"]
+        },
+        {
+            pageIndex: 5, pageName: pages[5].name,
             section: Translation.tr("On-screen display"),
             label: Translation.tr("OSD timeout"),
             description: Translation.tr("How long the volume/brightness OSD stays visible"),
