@@ -19,7 +19,7 @@ Item {
 
     Timer {
         id: overflowAutoCloseTimer
-        interval: 700
+        interval: 5000
         repeat: false
         onTriggered: root.trayOverflowOpen = false
     }
@@ -38,12 +38,12 @@ Item {
     signal closeAllTrayMenus()
 
     property bool smartTray: Config.options.bar.tray.filterPassive
-    
+
     // Filter out invalid items (null or missing id)
     function isValidItem(item) {
         return item && item.id;
     }
-    
+
     property list<var> itemsInUserList: SystemTray.items.values.filter(i => {
         if (!isValidItem(i)) return false;
         const id = (i.id || "").toLowerCase();
@@ -120,14 +120,14 @@ Item {
             background.implicitWidth: 24
             background.implicitHeight: 24
             background.anchors.centerIn: this
-            colBackgroundToggled: Appearance.inirEverywhere ? Appearance.inir.colSelection 
-                : Appearance.auroraEverywhere ? Appearance.aurora.colElevatedSurface 
+            colBackgroundToggled: Appearance.inirEverywhere ? Appearance.inir.colSelection
+                : Appearance.auroraEverywhere ? Appearance.aurora.colElevatedSurface
                 : Appearance.colors.colSecondaryContainer
-            colBackgroundToggledHover: Appearance.inirEverywhere ? Appearance.inir.colSelectionHover 
-                : Appearance.auroraEverywhere ? Appearance.aurora.colElevatedSurfaceHover 
+            colBackgroundToggledHover: Appearance.inirEverywhere ? Appearance.inir.colSelectionHover
+                : Appearance.auroraEverywhere ? Appearance.aurora.colElevatedSurfaceHover
                 : Appearance.colors.colSecondaryContainerHover
-            colRippleToggled: Appearance.inirEverywhere ? Appearance.inir.colPrimaryActive 
-                : Appearance.auroraEverywhere ? Appearance.aurora.colSubSurfaceActive 
+            colRippleToggled: Appearance.inirEverywhere ? Appearance.inir.colPrimaryActive
+                : Appearance.auroraEverywhere ? Appearance.aurora.colSubSurfaceActive
                 : Appearance.colors.colSecondaryContainerActive
 
             contentItem: MaterialSymbol {
