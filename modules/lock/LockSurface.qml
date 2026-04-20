@@ -310,7 +310,7 @@ MouseArea {
             }
         }
 
-        // Lock screen notifications - read-only compact list
+        // Lock screen notifications - grouped by app, read-only
         Loader {
             id: lockNotificationsLoader
             readonly property bool lockNotifEnabled: Config.options?.lock?.notifications?.enable ?? false
@@ -332,117 +332,168 @@ MouseArea {
 
                 Repeater {
                     model: {
-                        const all = Notifications.list
+                        const apps = Notifications.appNameList
                         const max = lockNotificationsLoader.lockNotifMaxCount
-                        return all.length > max ? all.slice(0, max) : all
+                        return apps.length > max ? apps.slice(0, max) : apps
                     }
 
-                    delegate: Rectangle {
-                        id: notifDelegate
+                    delegate: Item {
+                        id: groupDelegate
                         required property var modelData
-                        width: parent.width
-                        height: notifContent.implicitHeight + 16
-                        radius: Appearance.rounding.normal
-                        color: ColorUtils.transparentize(Appearance.colors.colLayer1, 0.25)
+                        readonly property var group: Notifications.groupsByAppName[modelData] ?? null
+                        readonly property var latestNotif: group?.notifications?.[0] ?? null
+                        readonly property int groupCount: group?.notifications?.length ?? 0
 
-                        layer.enabled: Appearance.effectsEnabled
-                        layer.effect: DropShadow {
-                            horizontalOffset: 0
-                            verticalOffset: 2
-                            radius: 8
-                            samples: 17
-                            color: Qt.rgba(0, 0, 0, 0.3)
+                        width: parent.width
+                        height: groupCard.height + (groupCount > 1 ? 4 : 0)
+                        visible: latestNotif !== null
+
+                        // Stacked card hint behind main card
+                        Rectangle {
+                            visible: groupDelegate.groupCount > 1
+                            anchors {
+                                horizontalCenter: parent.horizontalCenter
+                                bottom: parent.bottom
+                            }
+                            width: parent.width - 12
+                            height: groupCard.height - 4
+                            radius: Appearance.rounding.normal
+                            color: ColorUtils.transparentize(Appearance.colors.colLayer1, 0.45)
                         }
 
-                        RowLayout {
-                            id: notifContent
-                            anchors {
-                                left: parent.left; right: parent.right
-                                verticalCenter: parent.verticalCenter
-                                margins: 12
+                        // Main card with latest notification
+                        Rectangle {
+                            id: groupCard
+                            width: parent.width
+                            height: groupContent.implicitHeight + 16
+                            radius: Appearance.rounding.normal
+                            color: ColorUtils.transparentize(Appearance.colors.colLayer1, 0.25)
+
+                            layer.enabled: Appearance.effectsEnabled
+                            layer.effect: DropShadow {
+                                horizontalOffset: 0
+                                verticalOffset: 2
+                                radius: 8
+                                samples: 17
+                                color: Qt.rgba(0, 0, 0, 0.3)
                             }
-                            spacing: 10
 
-                            // Notification image or app icon
-                            Loader {
-                                Layout.alignment: Qt.AlignTop
-                                Layout.preferredWidth: 28
-                                Layout.preferredHeight: 28
-                                active: true
-                                sourceComponent: Rectangle {
-                                    radius: Appearance.rounding.small
-                                    color: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.7)
-                                    clip: true
+                            RowLayout {
+                                id: groupContent
+                                anchors {
+                                    left: parent.left; right: parent.right
+                                    verticalCenter: parent.verticalCenter
+                                    margins: 12
+                                }
+                                spacing: 10
 
-                                    Image {
-                                        id: notifImg
+                                // App icon with count badge
+                                Item {
+                                    Layout.alignment: Qt.AlignTop
+                                    Layout.preferredWidth: 32
+                                    Layout.preferredHeight: 32
+
+                                    Rectangle {
                                         anchors.fill: parent
-                                        source: notifDelegate.modelData?.image || notifDelegate.modelData?.appIcon || ""
-                                        fillMode: Image.PreserveAspectCrop
-                                        asynchronous: true
-                                        visible: status === Image.Ready
+                                        radius: Appearance.rounding.small
+                                        color: ColorUtils.transparentize(Appearance.colors.colPrimary, 0.7)
+                                        clip: true
+
+                                        Image {
+                                            id: groupNotifImg
+                                            anchors.fill: parent
+                                            source: groupDelegate.latestNotif?.image || groupDelegate.latestNotif?.appIcon || ""
+                                            fillMode: Image.PreserveAspectCrop
+                                            asynchronous: true
+                                            visible: status === Image.Ready
+                                        }
+
+                                        MaterialSymbol {
+                                            anchors.centerIn: parent
+                                            text: "notifications"
+                                            iconSize: 18
+                                            color: Appearance.colors.colOnPrimary
+                                            visible: groupNotifImg.status !== Image.Ready
+                                        }
                                     }
 
-                                    MaterialSymbol {
-                                        anchors.centerIn: parent
-                                        text: "notifications"
-                                        iconSize: 16
-                                        color: Appearance.colors.colOnPrimary
-                                        visible: notifImg.status !== Image.Ready
+                                    // Count badge
+                                    Rectangle {
+                                        visible: groupDelegate.groupCount > 1
+                                        anchors {
+                                            right: parent.right
+                                            top: parent.top
+                                            rightMargin: -4
+                                            topMargin: -4
+                                        }
+                                        width: Math.max(16, badgeText.implicitWidth + 6)
+                                        height: 16
+                                        radius: Appearance.rounding.full
+                                        color: Appearance.colors.colPrimary
+
+                                        Text {
+                                            id: badgeText
+                                            anchors.centerIn: parent
+                                            text: groupDelegate.groupCount
+                                            font.pixelSize: 9
+                                            font.weight: Font.Bold
+                                            font.family: Appearance.font.family.numbers
+                                            color: Appearance.colors.colOnPrimary
+                                        }
                                     }
                                 }
-                            }
 
-                            ColumnLayout {
-                                Layout.fillWidth: true
-                                spacing: 2
-
-                                // App name
-                                Text {
+                                ColumnLayout {
                                     Layout.fillWidth: true
-                                    text: notifDelegate.modelData?.appName ?? ""
-                                    font.pixelSize: Appearance.font.pixelSize.smaller
-                                    font.weight: Font.Medium
-                                    font.family: Appearance.font.family.main
-                                    color: Appearance.colors.colOnSurfaceVariant
-                                    elide: Text.ElideRight
-                                    visible: text.length > 0
-                                }
+                                    spacing: 2
 
-                                // Summary
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: notifDelegate.modelData?.summary ?? ""
-                                    font.pixelSize: Appearance.font.pixelSize.small
-                                    font.weight: Font.Medium
-                                    font.family: Appearance.font.family.main
-                                    color: Appearance.colors.colOnSurface
-                                    elide: Text.ElideRight
-                                    maximumLineCount: 1
-                                }
+                                    // App name
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: groupDelegate.modelData ?? ""
+                                        font.pixelSize: Appearance.font.pixelSize.smaller
+                                        font.weight: Font.Medium
+                                        font.family: Appearance.font.family.main
+                                        color: Appearance.colors.colOnSurfaceVariant
+                                        elide: Text.ElideRight
+                                        visible: text.length > 0
+                                    }
 
-                                // Body (optional, controlled by config)
-                                Text {
-                                    Layout.fillWidth: true
-                                    visible: lockNotificationsLoader.lockNotifShowBody && text.length > 0
-                                    text: notifDelegate.modelData?.body ?? ""
-                                    font.pixelSize: Appearance.font.pixelSize.smaller
-                                    font.family: Appearance.font.family.main
-                                    color: Appearance.colors.colOnSurfaceVariant
-                                    elide: Text.ElideRight
-                                    maximumLineCount: 2
-                                    wrapMode: Text.WordWrap
+                                    // Latest notification summary
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: groupDelegate.latestNotif?.summary ?? ""
+                                        font.pixelSize: Appearance.font.pixelSize.small
+                                        font.weight: Font.Medium
+                                        font.family: Appearance.font.family.main
+                                        color: Appearance.colors.colOnSurface
+                                        elide: Text.ElideRight
+                                        maximumLineCount: 1
+                                    }
+
+                                    // Body (optional)
+                                    Text {
+                                        Layout.fillWidth: true
+                                        visible: lockNotificationsLoader.lockNotifShowBody && text.length > 0
+                                        text: groupDelegate.latestNotif?.body ?? ""
+                                        font.pixelSize: Appearance.font.pixelSize.smaller
+                                        font.family: Appearance.font.family.main
+                                        color: Appearance.colors.colOnSurfaceVariant
+                                        elide: Text.ElideRight
+                                        maximumLineCount: 2
+                                        wrapMode: Text.WordWrap
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                // Overflow indicator
+                // Overflow indicator for remaining app groups
                 Text {
-                    visible: Notifications.list.length > lockNotificationsLoader.lockNotifMaxCount
+                    visible: Notifications.appNameList.length > lockNotificationsLoader.lockNotifMaxCount
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: "+" + (Notifications.list.length - lockNotificationsLoader.lockNotifMaxCount) + " " + Translation.tr("more")
+                    text: "+" + (Notifications.appNameList.length - lockNotificationsLoader.lockNotifMaxCount) + " " + Translation.tr("more")
                     font.pixelSize: Appearance.font.pixelSize.smaller
                     font.family: Appearance.font.family.main
                     color: Appearance.colors.colOnSurfaceVariant
