@@ -1682,7 +1682,7 @@ ContentPage {
 
             StyledText {
                 Layout.fillWidth: true
-                text: Translation.tr("Runs the same Niri maximize-column action as Mod+D when the focused workspace has exactly one normal tiling window. It skips fullscreen-like windows and Game Mode, and it does not rebalance after more windows appear.")
+                text: Translation.tr("Automatically maximizes a single tiling window to fill the screen. When a second window appears, the first is restored to its normal width.")
                 wrapMode: Text.WordWrap
                 color: Appearance.colors.colSubtext
                 font.pixelSize: Appearance.font.pixelSize.small
