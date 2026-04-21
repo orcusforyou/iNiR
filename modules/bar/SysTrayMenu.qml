@@ -68,7 +68,7 @@ PopupWindow {
     
     Timer {
         id: closeTimer
-        interval: 300
+        interval: 450
         running: root.visible && !hoverHandler.hovered && !root.anchorHovered
         onTriggered: root.close()
     }

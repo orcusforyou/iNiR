@@ -16,6 +16,7 @@ Item {
     property bool showSeparator: true
     property bool showOverflowMenu: true
     property var activeMenu: null
+    onActiveMenuChanged: updateOverflowAutoClose()
 
     Timer {
         id: overflowAutoCloseTimer
@@ -26,6 +27,11 @@ Item {
 
     function updateOverflowAutoClose(): void {
         if (!root.trayOverflowOpen) {
+            overflowAutoCloseTimer.stop();
+            return;
+        }
+        // Never auto-close while a context menu is open from an overflow item
+        if (root.activeMenu !== null) {
             overflowAutoCloseTimer.stop();
             return;
         }
@@ -90,10 +96,15 @@ Item {
         active: (root.trayOverflowOpen && overflowPopup.QsWindow?.window !== null) || root.activeMenu !== null
         windows: [overflowPopup.QsWindow?.window, root.activeMenu]
         onCleared: {
-            root.trayOverflowOpen = false;
             if (root.activeMenu) {
                 root.activeMenu.close();
                 root.activeMenu = null;
+            }
+            // If still hovering the overflow area, keep it open and let the timer handle it
+            if (trayOverflowButton.hovered || overflowPopup.popupHovered) {
+                root.updateOverflowAutoClose();
+            } else {
+                root.trayOverflowOpen = false;
             }
         }
     }

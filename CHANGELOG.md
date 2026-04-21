@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **Service spawning on KDE/GNOME**: removed `[Install]` section from systemd unit entirely. inir now wires itself to the compositor-specific service (niri.service, wayland-wm@Hyprland.service) via `.wants/` symlinks instead of `WantedBy=graphical-session.target`. Migration 022 moves existing users automatically.
 - **Animation token misapplication**: 21 animations across 16 files were using `elementMoveEnter` (400ms) instead of `elementMoveFast` (200ms) for fast feedback like popup opacity, hover states, and dock previews. Also fixed a timer interval incorrectly gated by `animationsEnabled`.
-- **Systray timeout**: overflow popup disappeared after 700ms, increased to 1500ms.
+- **Systray overflow behavior**: overflow popup was auto-closing while a right-click context menu was still open, orphaning it. Now suppresses auto-close when a menu is active. Also increased the base close timeout from 700ms to 1500ms and the context menu hover grace period to 450ms.
 - **Time format not following user preference**: lock screens and sidebar clock now use `DateTime.time` instead of hardcoded `Qt.formatTime`.
 - **Qt font clobbered on wallpaper change**: kdeglobals now reads the current gsettings font before writing, preserving user font choice.
 - **`inir status` false negative**: setup script wasn't resolving symlinks before passing paths to `qs -p`, so dev setups always reported "not running".
@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Notify-send always firing**: bash `&&` binds tighter than `&`, so the is_truthy guard was being backgrounded unconditionally. Switched to if/then/fi.
 
 ### Changed
+- **Animation tokens**: migrated hardcoded animation durations and easing curves across ~30 files to use Appearance design tokens, gated by `animationsEnabled`.
 - **Neovim theming**: replaced inline lua generation with external `inir.nvim` plugin via `neovim_themegen.sh`.
 - **Systemd hardening**: coredumps disabled (LimitCORE=0), DISPLAY exported to systemd env on start.
 - **SDDM service**: enabled during install phase.
