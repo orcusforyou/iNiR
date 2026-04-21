@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Recording notification config ignored**: jq `//` operator treats `false` as falsy, so `false // true` returned `true`. Boolean config reads now use explicit null checks.
 - **Notify-send always firing**: bash `&&` binds tighter than `&`, so the is_truthy guard was being backgrounded unconditionally. Switched to if/then/fi.
 - **Clipboard duplicates from browsers**: copying from a browser stored both the HTML and plain text versions as separate entries. Switched to type-specific wl-paste watchers (`--type text` and `--type image`) per cliphist upstream recommendation. Migration 023 patches existing users.
+- **Single-window auto-expand unreliable**: rewrote from a timer-retry-focus loop into direct event-driven checks from niri window/workspace handlers. No more needing to switch workspaces for it to trigger.
+- **Cursor theme inconsistency across apps**: niri config, gsettings, and `environment.d` could all hold different cursor themes. Changing cursor in settings now syncs all three sources so Electron/XWayland apps match.
 
 ### Changed
 - **Animation tokens**: migrated hardcoded animation durations and easing curves across ~30 files to use Appearance design tokens, gated by `animationsEnabled`.
@@ -30,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Systemd hardening**: coredumps disabled (LimitCORE=0), DISPLAY exported to systemd env on start.
 - **SDDM service**: enabled during install phase.
 - **Audio fallback**: wpctl now falls back to next available sink when USB audio disconnects.
+- **Environment bridge**: `ensure_systemd_graphical_env` now exports `ELECTRON_OZONE_PLATFORM_HINT`, `QT_QPA_PLATFORM`, and cursor vars to the systemd session, fixing Electron apps crashing when launched from the shell instead of a terminal.
 
 ### Contributors
 Thanks to [@kirisaki-vk](https://github.com/kirisaki-vk) for the time format fix and Qt font preservation, [@orcusforyou](https://github.com/orcusforyou) for the systray timeout fix, and [@yukazakiri](https://github.com/yukazakiri) for the chromium theme pipeline and neovim plugin migration.
