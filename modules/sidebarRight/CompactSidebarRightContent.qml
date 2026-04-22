@@ -160,6 +160,10 @@ Item {
                         const eventsIdx = root.sections.findIndex(s => s.id === "events")
                         if (eventsIdx !== -1) root.activeSection = eventsIdx
                     }
+                    onOpenEventsDialog: (editEvent) => {
+                        const eventsIdx = root.sections.findIndex(s => s.id === "events")
+                        if (eventsIdx !== -1) root.activeSection = eventsIdx
+                    }
                 }
             }
         }

@@ -1,5 +1,8 @@
+pragma ComponentBehavior: Bound
+
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.services
 import QtQuick
 import QtQuick.Layouts
 
@@ -8,37 +11,40 @@ RippleButton {
     property string day
     property int isToday
     property bool bold
-    property bool isHeader: false  // True for weekday labels (Mon, Tue, etc.)
-    property int eventCount: 0  // Number of events on this day
+    property bool isHeader: false
+    property int eventCount: 0
+    // Source colors for multi-colored dots (from CalendarSync + local events)
+    property var sourceColors: []
 
     Layout.fillWidth: false
     Layout.fillHeight: false
-    implicitWidth: 38; 
-    implicitHeight: 38;
+    implicitWidth: 38
+    implicitHeight: 38
 
-    toggled: (isToday == 1) && !isHeader  // Headers don't get toggled background
+    toggled: (isToday == 1) && !isHeader
     buttonRadius: Appearance.angelEverywhere ? Appearance.angel.roundingSmall
         : Appearance.inirEverywhere ? Appearance.inir.roundingSmall : Appearance.rounding.small
-    
+
     contentItem: Item {
         anchors.fill: parent
-        
+
         StyledText {
             anchors.centerIn: parent
+            anchors.verticalCenterOffset: (button.eventCount > 0 && !button.isHeader) ? -2 : 0
             text: button.day
             horizontalAlignment: Text.AlignHCenter
             font.weight: button.bold ? Font.DemiBold : Font.Normal
-            color: button.isHeader && (button.isToday == 1) 
+            color: button.isHeader && (button.isToday == 1)
                 ? (Appearance.angelEverywhere ? Appearance.angel.colPrimary
                     : Appearance.inirEverywhere ? Appearance.inir.colPrimary : Appearance.colors.colPrimary)
-                : (button.isToday == 1) 
+                : (button.isToday == 1)
                     ? (Appearance.angelEverywhere ? Appearance.angel.colOnPrimary
                         : Appearance.inirEverywhere ? Appearance.inir.colOnPrimary : Appearance.colors.colOnPrimary)
-                    : (button.isToday == 0) 
+                    : (button.isToday == 0)
                         ? (Appearance.angelEverywhere ? Appearance.angel.colText
                             : Appearance.inirEverywhere ? Appearance.inir.colText : Appearance.colors.colOnLayer1)
                         : (Appearance.angelEverywhere ? Appearance.angel.colTextSecondary
-                            : Appearance.inirEverywhere ? Appearance.inir.colTextSecondary 
+                            : Appearance.inirEverywhere ? Appearance.inir.colTextSecondary
                             : Appearance.auroraEverywhere ? Appearance.colors.colSubtext
                             : Appearance.colors.colOutlineVariant)
 
@@ -47,22 +53,61 @@ RippleButton {
                 animation: ColorAnimation { duration: Appearance.animation.elementMoveFast.duration; easing.type: Appearance.animation.elementMoveFast.type; easing.bezierCurve: Appearance.animation.elementMoveFast.bezierCurve }
             }
         }
-        
-        // Event indicator dot
-        Rectangle {
+
+        // Multi-colored event indicator dots
+        Row {
             visible: button.eventCount > 0 && !button.isHeader
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.bottom: parent.bottom
-            anchors.bottomMargin: 4
-            width: 6
-            height: 6
-            radius: 3
-            color: button.isToday == 1 
-                ? (Appearance.angelEverywhere ? Appearance.angel.colOnPrimary
-                    : Appearance.inirEverywhere ? Appearance.inir.colOnPrimary : Appearance.colors.colOnPrimary)
-                : (Appearance.angelEverywhere ? Appearance.angel.colPrimary
-                    : Appearance.inirEverywhere ? Appearance.inir.colPrimary : Appearance.colors.colPrimary)
+            anchors.bottomMargin: 3
+            spacing: 2
+
+            Repeater {
+                // Show up to 3 dots, one per unique source color
+                model: {
+                    const colors = button.sourceColors
+                    if (!colors || colors.length === 0) {
+                        // Fallback: single dot in primary color (local events only)
+                        if (button.eventCount > 0) {
+                            const primary = button.isToday == 1
+                                ? (Appearance.angelEverywhere ? Appearance.angel.colOnPrimary
+                                    : Appearance.inirEverywhere ? Appearance.inir.colOnPrimary : Appearance.colors.colOnPrimary)
+                                : (Appearance.angelEverywhere ? Appearance.angel.colPrimary
+                                    : Appearance.inirEverywhere ? Appearance.inir.colPrimary : Appearance.colors.colPrimary)
+                            return [primary]
+                        }
+                        return []
+                    }
+                    return colors.slice(0, 3)
+                }
+
+                delegate: Rectangle {
+                    required property var modelData
+                    required property int index
+                    width: 5
+                    height: 5
+                    radius: 2.5
+                    color: modelData
+
+                    Behavior on color {
+                        enabled: Appearance.animationsEnabled
+                        animation: ColorAnimation { duration: Appearance.animation.elementMoveFast.duration }
+                    }
+                }
+            }
+
+            // Overflow indicator when more than 3 sources
+            StyledText {
+                visible: (button.sourceColors?.length ?? 0) > 3
+                text: "+"
+                font.pixelSize: 7
+                font.weight: Font.Bold
+                color: button.isToday == 1
+                    ? (Appearance.angelEverywhere ? Appearance.angel.colOnPrimary
+                        : Appearance.inirEverywhere ? Appearance.inir.colOnPrimary : Appearance.colors.colOnPrimary)
+                    : (Appearance.angelEverywhere ? Appearance.angel.colTextSecondary
+                        : Appearance.inirEverywhere ? Appearance.inir.colTextSecondary : Appearance.colors.colSubtext)
+            }
         }
     }
 }
-

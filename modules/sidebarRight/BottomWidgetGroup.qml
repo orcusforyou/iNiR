@@ -410,6 +410,7 @@ Rectangle {
             anchors.fill: parent
             anchors.margins: 5
             onDayWithEventsClicked: (date) => root.switchToEventsTab()
+            onOpenEventsDialog: (editEvent) => root.openEventsDialog(editEvent)
         }
     }
 
