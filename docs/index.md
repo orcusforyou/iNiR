@@ -42,6 +42,14 @@ iNiR is a single-runtime shell built on [Quickshell](https://quickshell.outfoxxe
 
   [:octicons-arrow-right-24: Architecture](THEMING_ARCHITECTURE.md)
 
+- :material-calendar-sync: **Calendar Integration**
+
+  ---
+
+  Sync Google Calendar, Outlook, Nextcloud, or any ICS calendar.
+
+  [:octicons-arrow-right-24: Calendar setup](CALENDAR.md)
+
 </div>
 
 ---
