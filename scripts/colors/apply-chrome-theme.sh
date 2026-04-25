@@ -295,9 +295,9 @@ apply_to_browser() {
   # 1. Fix preferences first — ensures GM3 theme engine generates correct dark/light palette
   fix_preferences "$prefs_dir" "$name" "$pref_cs2"
 
-  # 2. Write policy — BrowserThemeColor + BrowserColorScheme (persists across restarts)
+  # 2. Write policy — BrowserThemeColor (persists across restarts)
   if ensure_policy_dir_writable "$policy_dir" "$name"; then
-    printf '{"BrowserThemeColor": "%s", "BrowserColorScheme": "device"}\n' "$theme_color" > "$policy_dir/ii-theme.json"
+    printf '{"BrowserThemeColor": "%s"}\n' "$theme_color" > "$policy_dir/ii-theme.json"
     policy_written='true'
     log "$name: policy written to $policy_dir/ii-theme.json"
   else
