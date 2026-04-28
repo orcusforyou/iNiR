@@ -99,7 +99,7 @@ EOF
 
     cat <<'EOF'
 Runtime:
-  start, stop, run, restart, kill, terminal, browser, close-window
+  start, stop, run, restart, kill, terminal, browser, close-window, colorpicker
 
 Maintenance (delegates to setup):
   install, reinstall, update, doctor, status, migrate, rollback, my-changes, uninstall
@@ -155,6 +155,7 @@ Most people only need:
   inir overview toggle
   inir terminal
   inir browser
+  inir colorpicker
   inir logs
   inir repair
   inir theme list-targets
@@ -2216,6 +2217,25 @@ case "$command_name" in
         done
         resolve_config_dir
         run_runtime_script "$config_dir" "scripts/close-window.sh"
+        ;;
+    colorpicker)
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                -h|--help)
+                    echo "Usage: inir colorpicker" >&2
+                    exit 0
+                    ;;
+                *)
+                    echo "Unknown option: $1" >&2
+                    exit 1
+                    ;;
+            esac
+        done
+        if ! command -v hyprpicker >/dev/null 2>&1; then
+            echo "hyprpicker not found — install it to use colorpicker" >&2
+            exit 1
+        fi
+        exec /usr/bin/hyprpicker -a
         ;;
     ipc)
         require_qs
