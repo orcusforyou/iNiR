@@ -88,6 +88,10 @@ Scope {
                 WlrLayershell.namespace: "quickshell:dock"
                 color: "transparent"
 
+                BackgroundEffect.blurRegion: Region {
+                    item: (Appearance.effectsEnabled && (Config.options?.performance?.compositorBlur ?? true)) ? dockMouseArea : null
+                }
+
                 Item { id: emptyMask; width: 0; height: 0 }
                 mask: Region { item: GameMode.shouldHidePanels ? emptyMask : dockMouseArea }
 

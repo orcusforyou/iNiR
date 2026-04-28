@@ -61,6 +61,10 @@ Scope {
         WlrLayershell.keyboardFocus: GlobalStates.sidebarRightOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
         color: "transparent"
 
+        BackgroundEffect.blurRegion: Region {
+            item: (Appearance.effectsEnabled && (Config.options?.performance?.compositorBlur ?? true) && GlobalStates.sidebarRightOpen) ? sidebarContentLoader : null
+        }
+
         anchors {
             top: true
             right: true

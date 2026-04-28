@@ -387,6 +387,7 @@ Singleton {
             property JsonObject performance: JsonObject {
                 property bool lowPower: false
                 property bool reduceAnimations: false
+                property bool compositorBlur: true // Use ext-background-effect-v1 for panel blur (requires compositor support)
             }
 
             property JsonObject powerProfiles: JsonObject {

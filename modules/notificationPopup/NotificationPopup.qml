@@ -44,6 +44,11 @@ Scope {
         }
 
         color: "transparent"
+
+        BackgroundEffect.blurRegion: Region {
+            item: (Appearance.effectsEnabled && (Config.options?.performance?.compositorBlur ?? true)) ? listview : null
+        }
+
         implicitWidth: Appearance.sizes.notificationPopupWidth
         // Add height buffer to account for Wayland compositor resize delay
         // This prevents content clipping while the window catches up to new content size

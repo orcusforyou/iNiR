@@ -684,7 +684,8 @@
   },
   "performance": {
     "lowPower": false,
-    "reduceAnimations": false
+    "reduceAnimations": false,
+    "compositorBlur": true
   },
   "policies": {
     "ai": 0,

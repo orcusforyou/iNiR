@@ -59,6 +59,10 @@ Scope {
             WlrLayershell.keyboardFocus: root.shouldShow ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
             color: "transparent"
 
+            BackgroundEffect.blurRegion: Region {
+                item: (Appearance.effectsEnabled && (Config.options?.performance?.compositorBlur ?? true) && root.shouldShow) ? overviewRoot.contentItem : null
+            }
+
             anchors {
                 top: true
                 bottom: true

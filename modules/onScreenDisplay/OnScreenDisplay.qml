@@ -146,6 +146,10 @@ Scope {
             id: osdRoot
             color: "transparent"
 
+            BackgroundEffect.blurRegion: Region {
+                item: (Appearance.effectsEnabled && (Config.options?.performance?.compositorBlur ?? true)) ? osdValuesWrapper : null
+            }
+
             Connections {
                 target: root
                 function onFocusedScreenChanged() {
