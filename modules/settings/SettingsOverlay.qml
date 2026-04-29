@@ -1107,9 +1107,14 @@ Scope {
                                             : CF.ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 0.5)
 
                                 onClicked: {
+                                    // Launch the window FIRST — once overlayMode flips,
+                                    // the LazyLoader in shell.qml unloads this whole
+                                    // component (timers and all), so a deferred restart
+                                    // never gets to fire.  The spawned process survives
+                                    // independently of our QML scope.
+                                    Quickshell.execDetached([Quickshell.shellPath("scripts/inir"), "settings-window"])
                                     Config.setNestedValue("settingsUi.overlayMode", false)
                                     GlobalStates.settingsOverlayOpen = false
-                                    overlayRestartTimer.restart()
                                 }
 
                                 contentItem: RowLayout {
@@ -1138,14 +1143,6 @@ Scope {
 
                                 StyledToolTip {
                                     text: Translation.tr("Switch to window mode")
-                                }
-                            }
-
-                            Timer {
-                                id: overlayRestartTimer
-                                interval: 500
-                                onTriggered: {
-                                    Quickshell.execDetached([Quickshell.shellPath("scripts/inir"), "settings-window"])
                                 }
                             }
                         }
