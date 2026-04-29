@@ -300,7 +300,7 @@ show_help() {
     tui_list_item "info        System and shell details dashboard"
     tui_list_item "backup      Create a manual snapshot"
     tui_list_item "logs        View recent runtime logs"
-    tui_list_item "extras      Install optional extras (iNiR-Walls / SDDM theme)"
+    tui_list_item "extras      Install optional extras (iNiR-Walls / SDDM theme / YAMIS icons)"
     echo ""
 
     tui_subtitle "Options"
@@ -422,7 +422,7 @@ tui_menu() {
             "${ICON_CHECK}|Doctor|Diagnose and fix problems" \
             "${ICON_DOT}|Config|View and edit shell settings" \
             "${ICON_STAR}|Theme|Change wallpaper and color scheme" \
-            "${ICON_DOT}|Extras|Install optional extras (iNiR-Walls / SDDM)" \
+            "${ICON_DOT}|Extras|Install optional extras (iNiR-Walls / SDDM / YAMIS icons)" \
             "${ICON_INFO}|Info|System and shell details dashboard" \
             "${ICON_DOT}|Logs|View recent runtime logs" \
             "${ICON_DOT}|Migrate|Review and apply config migrations" \
@@ -961,7 +961,8 @@ run_extras() {
     action=$(tui_choose_rich "Extras" \
         "${ICON_DOT}|Install iNiR-Walls|Download optional wallpaper pack and copy image files" \
         "${ICON_DOT}|Install ii-pixel-sddm|Install/apply iNiR SDDM login theme" \
-        "${ICON_DOT}|Install both|Run both optional installers" \
+        "${ICON_DOT}|Install YAMIS icons|Install/update yet-another-monochrome-icon-set (GPL-3, ~23 MiB)" \
+        "${ICON_DOT}|Install all|Run all optional installers" \
         "${ICON_CIRCLE}|Back|Return to main menu")
 
     case "$action" in
@@ -973,11 +974,17 @@ run_extras() {
             echo ""
             extras_install_sddm_theme "ask"
             ;;
-        "Install both")
+        "Install YAMIS icons")
+            echo ""
+            extras_install_yamis_icons
+            ;;
+        "Install all")
             echo ""
             extras_install_inir_walls
             echo ""
             extras_install_sddm_theme "ask"
+            echo ""
+            extras_install_yamis_icons
             ;;
         *)
             return 0
@@ -1572,6 +1579,7 @@ run_update() {
         # the current checkout so SDDM import/theme fixes are not stranded behind
         # the separate extras flow.
         refresh_sddm_theme_on_update "$ask"
+        extras_refresh_yamis_icons_on_update
 
         echo ""
         tui_success "Package-managed installation left unchanged"
@@ -1840,6 +1848,7 @@ run_update() {
     # Interactive mode can prompt before switching Current theme; non-interactive
     # mode only refreshes the installed theme files.
     refresh_sddm_theme_on_update "$ask"
+    extras_refresh_yamis_icons_on_update
 
     # Update Vesktop themes (themes live outside quickshell/ii tree)
     if [[ -d "${REPO_ROOT}/dots/.config/vesktop/themes" ]]; then
