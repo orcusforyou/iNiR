@@ -19,8 +19,7 @@ depends=(
   ddcutil
   geoclue
 
-  # Idle management
-  swayidle
+  # Lock screen
   swaylock
 
   # Screenshots & screen tools

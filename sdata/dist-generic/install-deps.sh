@@ -205,7 +205,7 @@ echo "  qt6-multimedia, qt6-imageformats, qt6-virtualkeyboard"
 echo ""
 
 echo -e "${STY_BLUE}Wayland tools (required):${STY_RST}"
-echo "  wl-clipboard, grim, slurp, swaylock, swayidle, wlsunset"
+echo "  wl-clipboard, grim, slurp, swaylock, wlsunset"
 echo "  awww (wallpaper daemon): https://codeberg.org/LGFae/awww"
 echo "    Install: cargo install --git https://codeberg.org/LGFae/awww.git"
 echo ""

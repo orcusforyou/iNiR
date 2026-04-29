@@ -33,7 +33,6 @@ if [[ -n "${ONLY_MISSING_DEPS:-}" ]]; then
     [fish]="fish"
     [magick]="imagemagick"
     [swaylock]="swaylock"
-    [swayidle]="swayidle"
     [grim]="grim"
     [mpv]="mpv"
     [cliphist]="cliphist"

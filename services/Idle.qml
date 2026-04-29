@@ -31,38 +31,42 @@ Singleton {
     }
 
     // ── Screen off ───────────────────────────────────────────────
+    // respectInhibitors: false — the screen turns off after the user's
+    // configured timeout regardless of what's playing. A monitor sitting
+    // bright at 100% during a movie is the bug, not the feature.
     IdleMonitor {
         id: screenOffMonitor
         enabled: !root.inhibit && root.screenOffTimeout > 0
         timeout: root.screenOffTimeout
+        respectInhibitors: false
         onIsIdleChanged: {
-            if (isIdle) {
-                if (CompositorService.isNiri)
-                    Quickshell.execDetached(["/usr/bin/niri", "msg", "action", "power-off-monitors"])
-            } else {
-                if (CompositorService.isNiri)
-                    Quickshell.execDetached(["/usr/bin/niri", "msg", "action", "power-on-monitors"])
-            }
+            console.log("[Idle] screen-off isIdle=" + isIdle + " (timeout=" + timeout + "s)")
+            if (isIdle) CompositorService.powerOffMonitors()
+            else        CompositorService.powerOnMonitors()
         }
     }
 
     // ── Lock ─────────────────────────────────────────────────────
+    // respectInhibitors: true (default) — don't lock during fullscreen video.
     IdleMonitor {
         id: lockMonitor
         enabled: !root.inhibit && root._effectiveLockTimeout > 0
         timeout: root._effectiveLockTimeout
         onIsIdleChanged: {
+            console.log("[Idle] lock isIdle=" + isIdle + " (timeout=" + timeout + "s)")
             if (isIdle)
                 Quickshell.execDetached([root.launcherPath, "lock", "activate"])
         }
     }
 
     // ── Suspend ──────────────────────────────────────────────────
+    // respectInhibitors: true (default) — don't suspend during a video call.
     IdleMonitor {
         id: suspendMonitor
         enabled: !root.inhibit && root.suspendTimeout > 0
         timeout: root.suspendTimeout
         onIsIdleChanged: {
+            console.log("[Idle] suspend isIdle=" + isIdle + " (timeout=" + timeout + "s)")
             if (isIdle)
                 Quickshell.execDetached(["/usr/bin/systemctl", "suspend", "-i"])
         }

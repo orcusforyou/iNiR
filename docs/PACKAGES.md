@@ -144,7 +144,6 @@ Input simulation, hardware control, and idle management.
 | `brightnessctl` | Backlight control |
 | `ddcutil` | DDC/CI for monitors |
 | `geoclue` | Geolocation |
-| `swayidle` | Idle management (screen off, lock, suspend) |
 | `swaylock` | Screen locker |
 | `blueman` | Bluetooth manager GUI |
 | `fprintd` | Fingerprint authentication (lock screen) |

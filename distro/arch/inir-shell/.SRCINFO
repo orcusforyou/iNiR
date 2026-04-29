@@ -31,7 +31,6 @@ pkgbase = inir-shell
 	depends = quickshell
 	depends = rsync
 	depends = slurp
-	depends = swayidle
 	depends = swaylock
 	depends = syntax-highlighting
 	depends = ttf-jetbrains-mono-nerd

@@ -80,7 +80,6 @@ depends=(
 
   #--- Wayland tools ---
   wlsunset
-  swayidle
   swaylock
   grim
   slurp

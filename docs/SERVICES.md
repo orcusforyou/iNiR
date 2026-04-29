@@ -31,7 +31,7 @@
 | **Brightness** | Monitor brightness via brightnessctl (laptop) and ddcutil (external monitors). Per-screen control. IPC target: `brightness`. |
 | **PowerProfilePersistence** | Restores the user's power profile on startup. |
 | **GameMode** | Fullscreen detection with auto/manual activation. Suppresses animations, notifications, blur when gaming. IPC target: `gameMode`. |
-| **Idle** | Idle management via swayidle. Screen-off, lock, and suspend timeouts. IPC target: `idle`. |
+| **Idle** | Native idle management via Quickshell `IdleMonitor` (ext-idle-notify-v1). Screen-off (ignores inhibitors), lock and suspend (respect inhibitors). Lock-before-sleep listens to logind's `PrepareForSleep`. IPC target: `idle`. |
 | **ResourceUsage** | CPU, RAM, GPU, temperature, disk polling. History arrays for graphs. Auto-stop timer (15s) when no consumers active. IPC target: `resources`. |
 | **SystemInfo** | Distro name, username, desktop environment detection. |
 | **Privacy** | Mic and screen sharing detection via PipeWire link analysis. |

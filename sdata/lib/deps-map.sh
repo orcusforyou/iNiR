@@ -82,7 +82,6 @@ DEPS_WAYLAND_SLURP="arch:slurp fedora:slurp debian:slurp ubuntu:slurp opensuse:s
 DEPS_WAYLAND_SWAPPY="arch:swappy fedora:swappy debian:swappy ubuntu:swappy opensuse:swappy void:swappy"
 DEPS_WAYLAND_WFRECORDER="arch:wf-recorder fedora:wf-recorder debian:wf-recorder ubuntu:wf-recorder opensuse:wf-recorder void:wf-recorder"
 DEPS_WAYLAND_WLSUNSET="arch:wlsunset fedora:wlsunset debian:wlsunset ubuntu:wlsunset opensuse:wlsunset void:wlsunset"
-DEPS_WAYLAND_SWAYIDLE="arch:swayidle fedora:swayidle debian:swayidle ubuntu:swayidle opensuse:swayidle void:swayidle"
 DEPS_WAYLAND_SWAYLOCK="arch:swaylock fedora:swaylock debian:swaylock ubuntu:swaylock opensuse:swaylock void:swaylock"
 DEPS_WAYLAND_XWAYLANDSATELLITE="arch:xwayland-satellite fedora:COPR:alebastr/sway-extras debian:COMPILE:https://github.com/Supreeeme/xwayland-satellite ubuntu:COMPILE:https://github.com/Supreeeme/xwayland-satellite opensuse:COMPILE:https://github.com/Supreeeme/xwayland-satellite void:xwayland-satellite"
 
