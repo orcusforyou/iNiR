@@ -81,12 +81,6 @@ QtObject {
         const value = url.toString();
         if (value.startsWith("data:"))
             return value;
-        if (value.startsWith("file://")) {
-            const filePath = root._pathFromFileUrl(value);
-            const cacheDir = root.cacheDirectory.endsWith("/") ? root.cacheDirectory.slice(0, -1) : root.cacheDirectory;
-            if (filePath.length > 0 && cacheDir.length > 0 && filePath.startsWith(`${cacheDir}/`))
-                return value;
-        }
 
         const separator = value.indexOf("?") >= 0 ? "&" : "?";
         return `${value}${separator}inir_art=${Qt.md5(root.metadataKey + ":" + root._generation)}`;
