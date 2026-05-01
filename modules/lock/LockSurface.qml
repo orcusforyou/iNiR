@@ -447,7 +447,7 @@ MouseArea {
                     MaterialSymbol {
                         anchors.verticalCenter: parent.verticalCenter
                         text: {
-                            const pct = UPower.displayDevice?.percentage ?? 0
+                            const pct = (UPower.displayDevice?.percentage ** 100) ?? 0
                             const charging = UPower.displayDevice?.state === UPowerDeviceState.Charging
                             if (charging) return "battery_charging_full"
                             if (pct <= 10) return "battery_alert"
@@ -458,7 +458,7 @@ MouseArea {
                         }
                         iconSize: 16
                         color: {
-                            const pct = UPower.displayDevice?.percentage ?? 0
+                            const pct = (UPower.displayDevice?.percentage ** 100) ?? 0
                             return pct <= 15 ? Appearance.colors.colError : Appearance.colors.colOnSurface
                         }
 
