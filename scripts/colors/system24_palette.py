@@ -73,7 +73,6 @@ def _resolve_output_files(env_var: str, default_path: Path) -> list[Path]:
         Path(f"~/.config/Vesktop/themes/{basename}").expanduser(),
         Path(f"~/.config/equicord/themes/{basename}").expanduser(),
         Path(f"~/.config/Equicord/themes/{basename}").expanduser(),
-        "Flatpak Folders"
         Path(f"~/.var/app/dev.vencord.Vesktop/config/vesktop/themes/{basename}").expanduser(),
         Path(f"~/.var/app/org.equicord.equibop/config/equibop/themes/{basename}").expanduser(),
     ]
